@@ -1,7 +1,7 @@
 use crate::traits::Encodable;
-
+use bitfield::bitfield;
 /// Possible quadrature count modes
-pub enum CountMode {
+pub enum NonQuadCountMode {
     NonQuad,
     /// (1 count per quadrature cycle)
     Quad1x,
@@ -36,6 +36,17 @@ pub enum CycleCountMode {
     /// (input clock frequency divided by factor of (n+1) where n=DTR,
     /// in both up and down directions.)
     ModuloN,
+}
+
+
+bitfield! {
+    struct Mdr0Payload(u8);
+    impl Debug;
+    pub quad_count_mode, set_quad_count_mode: 0,2;
+    pub free_running_count_mode, set_free_running_count_mode: 2,3;
+    pub index_mode, set_index_mode: 4,5;
+    pub is_index_inverted, set_is_index_inverted: 6;
+    pub filter_clock_division_factor, set_filter_clock_division_factor: 7;
 }
 
 impl Encodable for CountMode {
