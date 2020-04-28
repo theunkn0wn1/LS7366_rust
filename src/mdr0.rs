@@ -2,8 +2,9 @@ use bitfield::bitfield;
 
 use crate::traits::Encodable;
 
+#[derive(Debug)]
 /// Possible quadrature count modes
-pub enum NonQuadCountMode {
+pub enum QuadCountMode {
     NonQuad,
     /// (1 count per quadrature cycle)
     Quad1x,
@@ -12,7 +13,7 @@ pub enum NonQuadCountMode {
     /// (4 count per quadrature cycle)
     Quad4x,
 }
-
+#[derive(Debug)]
 pub enum IndexMode {
     DisableIndex,
     /// configure index as the "load CNTR" input (transfers DTR to CNTR)
@@ -23,6 +24,7 @@ pub enum IndexMode {
     LoadOtr,
 }
 
+#[derive(Debug)]
 /// Enum representing cycle count modes.
 pub enum CycleCountMode {
     /// Free running count mode.
@@ -40,39 +42,41 @@ pub enum CycleCountMode {
     ModuloN,
 }
 
+#[derive(Debug)]
 pub enum FilterClockDivisionFactor {
     /// Filter clock division factor = 1
     One,
     /// Filter clock division factor = 2
     Two,
 }
-
-struct Mdr0 {
-    non_quad_count_mode: NonQuadCountMode,
-    cycle_count_mode: CycleCountMode,
-    index_mode: IndexMode,
-    is_index_inverted: bool,
-    filter_clock: FilterClockDivisionFactor,
+#[derive(Debug)]
+pub struct Mdr0 {
+    pub quad_count_mode: QuadCountMode,
+    pub cycle_count_mode: CycleCountMode,
+    pub index_mode: IndexMode,
+    pub is_index_inverted: bool,
+    pub filter_clock: FilterClockDivisionFactor,
 }
 
 
 bitfield! {
-    struct Mdr0Payload(u8);
+    pub struct Mdr0Payload(u64);
     impl Debug;
-    pub quad_count_mode, set_quad_count_mode: 0,2;
-    pub free_running_count_mode, set_free_running_count_mode: 2,3;
+    u8;
+    pub quad_count_mode, set_quad_count_mode: 0,1;
+    pub cycle_count_mode, set_cycle_count_mode: 2,3;
     pub index_mode, set_index_mode: 4,5;
     pub is_index_inverted, set_is_index_inverted: 6;
     pub filter_clock_division_factor, set_filter_clock_division_factor: 7;
 }
 
-impl Encodable for NonQuadCountMode {
+impl Encodable for QuadCountMode {
     fn encode(&self) -> u8 {
         match self {
-            NonQuadCountMode::NonQuad => { 0b00 }
-            NonQuadCountMode::Quad1x => { 0b01 }
-            NonQuadCountMode::Quad2x => { 0b10 }
-            NonQuadCountMode::Quad4x => { 0b11 }
+            QuadCountMode::NonQuad => { 0b00 }
+            QuadCountMode::Quad1x => { 0b01 }
+            QuadCountMode::Quad2x => { 0b10 }
+            QuadCountMode::Quad4x => { 0b11 }
         }
     }
 }
@@ -96,5 +100,32 @@ impl Encodable for CycleCountMode {
             CycleCountMode::RangeLimit => { 0b10 }
             CycleCountMode::ModuloN => { 0b11 }
         }
+    }
+}
+
+impl Encodable for FilterClockDivisionFactor {
+    fn encode(&self) -> u8 {
+        match self {
+            FilterClockDivisionFactor::One => { 0b0 }
+            FilterClockDivisionFactor::Two => { 0b1 }
+        }
+    }
+}
+
+impl Mdr0 {
+    pub fn encode(&self) -> u64 {
+        let mut payload = Mdr0Payload(0x00);
+        let quad_value = self.quad_count_mode.encode();
+        payload.set_quad_count_mode(quad_value);
+        payload.set_cycle_count_mode(self.cycle_count_mode.encode());
+        payload.set_index_mode(self.index_mode.encode());
+        payload.set_filter_clock_division_factor(
+            match self.filter_clock{
+                FilterClockDivisionFactor::One => {false},
+                FilterClockDivisionFactor::Two => {true},
+            }
+        );
+
+        payload.0
     }
 }

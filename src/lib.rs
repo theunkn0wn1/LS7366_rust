@@ -1,6 +1,6 @@
 use bitfield::bitfield;
 
-mod mdr0;
+pub mod mdr0;
 pub mod traits;
 
 pub enum RegisterSelection {
