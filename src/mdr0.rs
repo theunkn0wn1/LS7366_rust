@@ -1,5 +1,7 @@
-use crate::traits::Encodable;
 use bitfield::bitfield;
+
+use crate::traits::Encodable;
+
 /// Possible quadrature count modes
 pub enum NonQuadCountMode {
     NonQuad,
@@ -38,6 +40,21 @@ pub enum CycleCountMode {
     ModuloN,
 }
 
+pub enum FilterClockDivisionFactor {
+    /// Filter clock division factor = 1
+    One,
+    /// Filter clock division factor = 2
+    Two,
+}
+
+struct Mdr0 {
+    non_quad_count_mode: NonQuadCountMode,
+    cycle_count_mode: CycleCountMode,
+    index_mode: IndexMode,
+    is_index_inverted: bool,
+    filter_clock: FilterClockDivisionFactor,
+}
+
 
 bitfield! {
     struct Mdr0Payload(u8);
@@ -49,13 +66,13 @@ bitfield! {
     pub filter_clock_division_factor, set_filter_clock_division_factor: 7;
 }
 
-impl Encodable for CountMode {
+impl Encodable for NonQuadCountMode {
     fn encode(&self) -> u8 {
         match self {
-            CountMode::NonQuad => { 0b00 }
-            CountMode::Quad1x => { 0b01 }
-            CountMode::Quad2x => { 0b10 }
-            CountMode::Quad4x => { 0b11 }
+            NonQuadCountMode::NonQuad => { 0b00 }
+            NonQuadCountMode::Quad1x => { 0b01 }
+            NonQuadCountMode::Quad2x => { 0b10 }
+            NonQuadCountMode::Quad4x => { 0b11 }
         }
     }
 }
