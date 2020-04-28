@@ -17,13 +17,17 @@ const CENTER_PAYLOAD: [u8; 1] = [SET_ENCODER_TO_CENTER];
 fn main() -> Result<(), Box<dyn Error>> {
     let device = DeviceInfo::new()?.model();
     println!("device model := {}", device);
-    let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss0, 14000000, Mode::Mode0)?;
+    let spi_0 = Spi::new(Bus::Spi0, SlaveSelect::Ss0, 14000000, Mode::Mode0)?;
+    let spi_1 = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 14000000, Mode::Mode0)?;
 
-    init_encoder(&spi)?;
-    zero_encoder(&spi)?;
-    center_encoder(&spi)?;
+    init_encoder(&spi_0)?;
+    init_encoder(&spi_1)?;
+    zero_encoder(&spi_0)?;
+    zero_encoder(&spi_1)?;
+    center_encoder(&spi_0)?;
+    center_encoder(&spi_1)?;
     loop {
-        println!("read: {:?}", read_encoder(&spi)?);
+        println!("read: {:?} {:?}", read_encoder(&spi_0)?, read_encoder(&spi_1)?);
     }
 }
 
