@@ -14,11 +14,11 @@ pub enum CountMode {
 pub enum IndexMode {
     DisableIndex,
     /// configure index as the "load CNTR" input (transfers DTR to CNTR)
-    loadCNTR,
+    LoadCntr,
     /// configure index as the "reset CNTR" input (clears CNTR to 0).
-    clearCNTR,
+    ClearCntr,
     /// configure index as the "load OTR" input ( transfers CNTR to OTR ).
-    loadOTR,
+    LoadOtr,
 }
 
 /// Enum representing cycle count modes.
@@ -53,9 +53,9 @@ impl Encodable for IndexMode {
     fn encode(&self) -> u8 {
         match self {
             IndexMode::DisableIndex => { 0b00 }
-            IndexMode::loadCNTR => { 0b01 }
-            IndexMode::clearCNTR => { 0b10 }
-            IndexMode::loadOTR => { 0b11 }
+            IndexMode::LoadCntr => { 0b01 }
+            IndexMode::ClearCntr => { 0b10 }
+            IndexMode::LoadOtr => { 0b11 }
         }
     }
 }
