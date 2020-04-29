@@ -60,12 +60,11 @@ pub struct Mdr0 {
 
 
 bitfield! {
-    pub struct Mdr0Payload(u64);
+    pub struct Mdr0Payload(u8);
     impl Debug;
-    u8;
-    pub quad_count_mode, set_quad_count_mode: 0,1;
-    pub cycle_count_mode, set_cycle_count_mode: 2,3;
-    pub index_mode, set_index_mode: 4,5;
+    pub quad_count_mode, set_quad_count_mode: 2,0;
+    pub cycle_count_mode, set_cycle_count_mode: 3,2;
+    pub index_mode, set_index_mode: 5,4;
     pub is_index_inverted, set_is_index_inverted: 6;
     pub filter_clock_division_factor, set_filter_clock_division_factor: 7;
 }
@@ -112,8 +111,8 @@ impl Encodable for FilterClockDivisionFactor {
     }
 }
 
-impl Mdr0 {
-    pub fn encode(&self) -> u64 {
+impl Encodable for Mdr0 {
+    fn encode(&self) -> u8 {
         let mut payload = Mdr0Payload(0x00);
         let quad_value = self.quad_count_mode.encode();
         payload.set_quad_count_mode(quad_value);

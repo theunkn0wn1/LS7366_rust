@@ -2,7 +2,6 @@ use std::error::Error;
 
 use rppal::spi::{Bus, Mode, Result as SpiResult, SlaveSelect, Spi};
 use rppal::system::DeviceInfo;
-use ls7366::RegisterAction;
 const WRITE_MDR0: u8 = 0x88;
 const WRITE_DTR: u8 = 0x98;
 const CONFIGURE4BYTE_MODE: u8 = 0x03;
