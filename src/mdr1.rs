@@ -1,6 +1,6 @@
 use bitfield::bitfield;
 
-use crate::errors::DecodeError;
+use crate::errors::EncoderError;
 use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
@@ -44,14 +44,14 @@ impl Encodable for CounterMode {
 }
 
 impl Decodable for CounterMode {
-    fn decode(raw: u8) -> Result<Self, DecodeError> {
+    fn decode(raw: u8) -> Result<Self, EncoderError> {
         match raw
         {
             0b00 => Ok(CounterMode::Byte4),
             0b01 => Ok(CounterMode::Byte3),
             0b10 => Ok(CounterMode::Byte2),
             0b11 => Ok(CounterMode::Byte1),
-            _ => Err(DecodeError::Failed("failed to decode CounterMode".to_string()))
+            _ => Err(EncoderError::FailedDecode("failed to decode CounterMode".to_string()))
         }
     }
 }
@@ -71,7 +71,7 @@ impl Encodable for Mdr1 {
 }
 
 impl Decodable for Mdr1 {
-    fn decode(raw: u8) -> Result<Self, DecodeError> {
+    fn decode(raw: u8) -> Result<Self, EncoderError> {
         let payload = Payload(raw);
 
         Ok(Self {

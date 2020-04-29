@@ -1,6 +1,6 @@
 use bitfield::bitfield;
 
-use crate::errors::DecodeError;
+use crate::errors::EncoderError;
 use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
@@ -84,13 +84,13 @@ impl Encodable for QuadCountMode {
 }
 
 impl Decodable for QuadCountMode {
-    fn decode(raw: u8) -> Result<Self, DecodeError> {
+    fn decode(raw: u8) -> Result<Self, EncoderError> {
         match raw {
             0b00 => Ok(QuadCountMode::NonQuad),
             0b01 => Ok(QuadCountMode::Quad1x),
             0b10 => Ok(QuadCountMode::Quad2x),
             0b11 => Ok(QuadCountMode::Quad4x),
-            _ => Err(DecodeError::Failed(String::from("failed to parse QuadCountMode"))),
+            _ => Err(EncoderError::FailedDecode("failed to parse QuadCountMode".to_string())),
         }
     }
 }
@@ -107,13 +107,13 @@ impl Encodable for IndexMode {
 }
 
 impl Decodable for IndexMode {
-    fn decode(raw: u8) -> Result<IndexMode, DecodeError> {
+    fn decode(raw: u8) -> Result<IndexMode, EncoderError> {
         match raw {
             0b00 => Ok(IndexMode::DisableIndex),
             0b01 => Ok(IndexMode::LoadCntr),
             0b10 => Ok(IndexMode::ClearCntr),
             0b11 => Ok(IndexMode::LoadOtr),
-            _ => Err(DecodeError::Failed(String::from("failed to parse IndexMode"))),
+            _ => Err(EncoderError::FailedDecode("failed to parse IndexMode".to_string())),
         }
     }
 }
@@ -130,13 +130,13 @@ impl Encodable for CycleCountMode {
 }
 
 impl Decodable for CycleCountMode {
-    fn decode(raw: u8) -> Result<CycleCountMode, DecodeError> {
+    fn decode(raw: u8) -> Result<CycleCountMode, EncoderError> {
         match raw {
             0b00 => Ok(CycleCountMode::FreeRunning),
             0b01 => Ok(CycleCountMode::SingleCycle),
             0b10 => Ok(CycleCountMode::RangeLimit),
             0b11 => Ok(CycleCountMode::ModuloN),
-            _ => Err(DecodeError::Failed(String::from("failed to parse CycleCount"))),
+            _ => Err(EncoderError::FailedDecode("failed to parse CycleCount".to_string())),
         }
     }
 }
@@ -151,7 +151,7 @@ impl Encodable for FilterClockDivisionFactor {
 }
 
 impl FilterClockDivisionFactor {
-    pub fn decode(raw: bool) -> Result<FilterClockDivisionFactor, DecodeError> {
+    pub fn decode(raw: bool) -> Result<FilterClockDivisionFactor, EncoderError> {
         match raw {
             false => Ok(FilterClockDivisionFactor::One),
             true => Ok(FilterClockDivisionFactor::Two),
@@ -178,7 +178,7 @@ impl Encodable for Mdr0 {
 }
 
 impl Decodable for Mdr0 {
-    fn decode(raw: u8) -> Result<Mdr0, DecodeError> {
+    fn decode(raw: u8) -> Result<Mdr0, EncoderError> {
         let payload = Mdr0Payload(raw);
         Ok(Mdr0 {
             quad_count_mode: QuadCountMode::decode(payload.quad_count_mode())?,

@@ -1,6 +1,6 @@
 use bitfield::bitfield;
 
-use crate::errors::DecodeError;
+use crate::errors::EncoderError;
 use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
@@ -50,7 +50,7 @@ impl Encodable for Target {
 }
 
 impl Decodable for Target {
-    fn decode(raw: u8) -> Result<Self, DecodeError> {
+    fn decode(raw: u8) -> Result<Self, EncoderError> {
         match raw {
             0b000 => Ok(Target::None),
             0b001 => Ok(Target::Mdr0),
@@ -60,7 +60,7 @@ impl Decodable for Target {
             0b101 => Ok(Target::Otr),
             0b110 => Ok(Target::Str),
             0b111 => Ok(Target::None),
-            _ => { Err(DecodeError::Failed("failed to decode Target".to_string())) }
+            _ => { Err(EncoderError::FailedDecode("failed to decode Target".to_string())) }
         }
     }
 }
@@ -77,13 +77,13 @@ impl Encodable for Action {
 }
 
 impl Decodable for Action {
-    fn decode(raw: u8) -> Result<Self, DecodeError> {
+    fn decode(raw: u8) -> Result<Self, EncoderError> {
         match raw {
             0b00 => Ok(Action::Clear),
             0b01 => Ok(Action::Read),
             0b10 => Ok(Action::Write),
             0b11 => Ok(Action::Load),
-            _ => Err(DecodeError::Failed("failed to decode Action".to_string()))
+            _ => Err(EncoderError::FailedDecode("failed to decode Action".to_string()))
         }
     }
 }
@@ -99,7 +99,7 @@ impl Encodable for InstructionRegister {
 }
 
 impl Decodable for InstructionRegister {
-    fn decode(raw: u8) -> Result<Self, DecodeError> {
+    fn decode(raw: u8) -> Result<Self, EncoderError> {
         let payload = Payload(raw);
         Ok(Self {
             target: Target::decode(payload.target())?,
