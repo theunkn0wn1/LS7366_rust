@@ -75,10 +75,10 @@ bitfield! {
 impl Encodable for QuadCountMode {
     fn encode(&self) -> u8 {
         match self {
-            QuadCountMode::NonQuad => { 0b00 }
-            QuadCountMode::Quad1x => { 0b01 }
-            QuadCountMode::Quad2x => { 0b10 }
-            QuadCountMode::Quad4x => { 0b11 }
+            QuadCountMode::NonQuad => 0b00,
+            QuadCountMode::Quad1x => 0b01,
+            QuadCountMode::Quad2x => 0b10,
+            QuadCountMode::Quad4x => 0b11,
         }
     }
 }
@@ -121,10 +121,10 @@ impl Decodable for IndexMode {
 impl Encodable for CycleCountMode {
     fn encode(&self) -> u8 {
         match self {
-            CycleCountMode::FreeRunning => { 0b00 }
-            CycleCountMode::SingleCycle => { 0b01 }
-            CycleCountMode::RangeLimit => { 0b10 }
-            CycleCountMode::ModuloN => { 0b11 }
+            CycleCountMode::FreeRunning => 0b00,
+            CycleCountMode::SingleCycle => 0b01,
+            CycleCountMode::RangeLimit => 0b10,
+            CycleCountMode::ModuloN => 0b11,
         }
     }
 }
@@ -132,11 +132,11 @@ impl Encodable for CycleCountMode {
 impl Decodable for CycleCountMode {
     fn decode(raw: u8) -> Result<CycleCountMode, DecodeError> {
         match raw {
-            0b00 => { Ok(CycleCountMode::FreeRunning) }
-            0b01 => { Ok(CycleCountMode::SingleCycle) }
-            0b10 => { Ok(CycleCountMode::RangeLimit) }
-            0b11 => { Ok(CycleCountMode::ModuloN) }
-            _ => { Err(DecodeError::Failed) }
+            0b00 => Ok(CycleCountMode::FreeRunning),
+            0b01 => Ok(CycleCountMode::SingleCycle),
+            0b10 => Ok(CycleCountMode::RangeLimit),
+            0b11 => Ok(CycleCountMode::ModuloN),
+            _ => Err(DecodeError::Failed),
         }
     }
 }
@@ -144,8 +144,8 @@ impl Decodable for CycleCountMode {
 impl Encodable for FilterClockDivisionFactor {
     fn encode(&self) -> u8 {
         match self {
-            FilterClockDivisionFactor::One => { 0b0 }
-            FilterClockDivisionFactor::Two => { 0b1 }
+            FilterClockDivisionFactor::One => 0b0,
+            FilterClockDivisionFactor::Two => 0b1,
         }
     }
 }
@@ -153,9 +153,9 @@ impl Encodable for FilterClockDivisionFactor {
 impl Decodable for FilterClockDivisionFactor {
     fn decode(raw: u8) -> Result<FilterClockDivisionFactor, DecodeError> {
         match raw {
-            0b0 => { Ok(FilterClockDivisionFactor::One) }
-            0b1 => { Ok(FilterClockDivisionFactor::Two) }
-            _ => { Err(DecodeError::Failed) }
+            0b0 => Ok(FilterClockDivisionFactor::One),
+            0b1 => Ok(FilterClockDivisionFactor::Two),
+            _ => Err(DecodeError::Failed),
         }
     }
 }
