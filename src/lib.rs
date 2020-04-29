@@ -1,5 +1,3 @@
-use bitfield::bitfield;
-
 pub mod mdr0;
 pub mod traits;
 pub mod ir;
