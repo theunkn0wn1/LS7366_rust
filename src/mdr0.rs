@@ -63,7 +63,7 @@ pub struct Mdr0 {
 
 
 bitfield! {
-    pub struct Mdr0Payload(u8);
+    struct Mdr0Payload(u8);
     impl Debug;
     pub quad_count_mode, set_quad_count_mode: 2,0;
     pub cycle_count_mode, set_cycle_count_mode: 3,2;

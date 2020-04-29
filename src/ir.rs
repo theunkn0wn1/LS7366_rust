@@ -52,6 +52,7 @@ impl Encodable for Target {
 impl Decodable for Target {
     fn decode(raw: u8) -> Result<Self, DecodeError> {
         match raw {
+            0b000 => Ok(Target::None),
             0b001 => Ok(Target::Mdr0),
             0b010 => Ok(Target::Mdr1),
             0b011 => Ok(Target::Dtr),
@@ -92,6 +93,7 @@ impl Encodable for InstructionRegister {
         let mut payload = Payload(0x00);
         payload.set_target(self.target.encode());
         payload.set_action(self.action.encode());
+
         payload.0
     }
 }
