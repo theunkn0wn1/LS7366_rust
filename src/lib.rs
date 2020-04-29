@@ -1,7 +1,7 @@
 use embedded_hal::blocking::spi::Transfer;
 use embedded_hal::spi::FullDuplex;
+use rppal::spi::Spi;
 
-use crate::errors::EncoderError;
 use crate::ir::Action;
 use crate::mdr0::Mdr0;
 use crate::traits::Encodable;
@@ -12,24 +12,32 @@ pub mod ir;
 pub mod errors;
 pub mod mdr1;
 
+#[derive(Clone, Copy, Debug)]
+pub enum Error<SpiError> {
+    SpiError(SpiError),
+    IdMismatch(u8),
+    PayloadTooBig,
+}
+
 pub struct Ls7366<SPI> {
     interface: SPI,
 }
 
-impl<SPI: FullDuplex<u8> + Transfer<u8>> Ls7366<SPI> {
+impl<SPI, SpiError> Ls7366<SPI>
+    where SPI: FullDuplex<u8, Error=SpiError> + Transfer<u8> + Transfer<u8, Error=SpiError> {
     pub fn new(iface: SPI) -> Self {
         return Ls7366 {
             interface: iface
         };
     }
 
-    pub fn write_register(mut self, target: ir::Target, payload: &Vec<u8>) -> Result<(), Self::Error> {
+    pub fn write_register(mut self, target: ir::Target, payload: &Vec<u8>) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
             action: ir::Action::Write,
         };
         if payload.len() > 4 {
-            return Err(EncoderError::FailedIO("register payload too big. Expected at most 4 bytes.".to_string()));
+            return Err(Error::PayloadTooBig);
         }
 
         self.interface.send(ir_cmd.encode()).expect_err("failed to transmit");
@@ -39,15 +47,18 @@ impl<SPI: FullDuplex<u8> + Transfer<u8>> Ls7366<SPI> {
         Ok(())
     }
 
-    pub fn read_register(mut self, target: ir::Target) -> Result<(Vec<u8>), Self::Error> {
+    pub fn read_register(mut self, target: ir::Target) -> Result<(Vec<u8>), Error<SpiError>> {
         let ir = ir::InstructionRegister {
             target,
             action: Action::Read,
         };
-        let mut tx_buffer :Vec<u8> = vec![ir.encode(), 0x00, 0x00, 0x00, 0x00];
+        let mut tx_buffer: Vec<u8> = vec![ir.encode(), 0x00, 0x00, 0x00, 0x00];
 
-        let result = self.interface.transfer(&mut tx_buffer)?;
-        Ok(rx_buffer)
+        let result = self.interface.transfer(&mut tx_buffer);
+        match result {
+            Ok(result) => Ok(Vec::from(result)),
+            Err(error) => Err(Error::SpiError(error)),
+        }
     }
 }
 

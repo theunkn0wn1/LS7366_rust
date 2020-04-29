@@ -12,6 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("device model := {}", device);
 //    let spi_0 = Spi::new(Bus::Spi0, SlaveSelect::Ss0, 14000000, Mode::Mode0)?;
     let spi_1 = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 14000000, Mode::Mode0)?;
+    let spi_driver = ls7366::Ls7366::new(spi_1);
 
     let mdr0_payload = mdr0::Mdr0 {
         quad_count_mode: mdr0::QuadCountMode::Quad4x,
@@ -20,34 +21,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         is_index_inverted: false,
         filter_clock: mdr0::FilterClockDivisionFactor::One,
     };
-    let mut rx_buffer: Vec<u8> = vec![];
-    let tx_buffer = init_command(mdr0_payload);
-    rx_buffer.resize(tx_buffer.len(), 0);
-    println!("init cmd :: {:?}", tx_buffer);
-    spi_1.transfer(&mut rx_buffer, &tx_buffer)?;
-    println!("initialized spi1, result := {:?}", rx_buffer);
-    rx_buffer.clear();
-
-    let tx_buffer = zero_dtr_command();
-    rx_buffer.resize(tx_buffer.len(), 0);
-    println!("tx buffer :: {:?}", tx_buffer);
-    spi_1.transfer(&mut rx_buffer, &tx_buffer)?;
-    println!("zero'ed spi1's DTR, result := {:?}", rx_buffer);
-    rx_buffer.clear();
-
-    let tx_buffer = clear_cntr_command();
-    rx_buffer.resize(tx_buffer.len(), 0);
-    println!("tx buffer :: {:?}", tx_buffer);
-    spi_1.transfer(&mut rx_buffer, &tx_buffer)?;
-    println!("zero'ed spi1's CNTR, result := {:?}", rx_buffer);
 
     loop {
-        rx_buffer.clear();
-        rx_buffer.resize(5, 0x00);
 
-        // last but NOT least, try to read the counter!
-        spi_1.transfer(&mut rx_buffer, &read_cntr_command())?;
-        println!("read from SPI1, value := {:?}", rx_buffer);
     }
 }
 #[allow(dead_code)]
