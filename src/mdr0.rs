@@ -1,6 +1,7 @@
 use bitfield::bitfield;
 
-use crate::traits::Encodable;
+use crate::errors::DecodeError;
+use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
 /// Possible quadrature count modes
@@ -13,6 +14,7 @@ pub enum QuadCountMode {
     /// (4 count per quadrature cycle)
     Quad4x,
 }
+
 #[derive(Debug)]
 pub enum IndexMode {
     DisableIndex,
@@ -49,6 +51,7 @@ pub enum FilterClockDivisionFactor {
     /// Filter clock division factor = 2
     Two,
 }
+
 #[derive(Debug)]
 pub struct Mdr0 {
     pub quad_count_mode: QuadCountMode,
@@ -80,13 +83,37 @@ impl Encodable for QuadCountMode {
     }
 }
 
+impl Decodable for QuadCountMode {
+    fn decode(raw: u8) -> Result<Self, DecodeError> {
+        match raw {
+            0b00 => Ok(QuadCountMode::NonQuad),
+            0b01 => Ok(QuadCountMode::Quad1x),
+            0b10 => Ok(QuadCountMode::Quad2x),
+            0b11 => Ok(QuadCountMode::Quad4x),
+            _ => Err(DecodeError::Failed),
+        }
+    }
+}
+
 impl Encodable for IndexMode {
     fn encode(&self) -> u8 {
         match self {
-            IndexMode::DisableIndex => { 0b00 }
-            IndexMode::LoadCntr => { 0b01 }
-            IndexMode::ClearCntr => { 0b10 }
-            IndexMode::LoadOtr => { 0b11 }
+            IndexMode::DisableIndex => 0b00,
+            IndexMode::LoadCntr => 0b01,
+            IndexMode::ClearCntr => 0b10,
+            IndexMode::LoadOtr => 0b11,
+        }
+    }
+}
+
+impl Decodable for IndexMode {
+    fn decode(raw: u8) -> Result<IndexMode, DecodeError> {
+        match raw {
+            0b00 => Ok(IndexMode::DisableIndex),
+            0b01 => Ok(IndexMode::LoadCntr),
+            0b10 => Ok(IndexMode::ClearCntr),
+            0b11 => Ok(IndexMode::LoadOtr),
+            _ => Err(DecodeError::Failed),
         }
     }
 }
@@ -102,11 +129,33 @@ impl Encodable for CycleCountMode {
     }
 }
 
+impl Decodable for CycleCountMode {
+    fn decode(raw: u8) -> Result<CycleCountMode, DecodeError> {
+        match raw {
+            0b00 => { Ok(CycleCountMode::FreeRunning) }
+            0b01 => { Ok(CycleCountMode::SingleCycle) }
+            0b10 => { Ok(CycleCountMode::RangeLimit) }
+            0b11 => { Ok(CycleCountMode::ModuloN) }
+            _ => { Err(DecodeError::Failed) }
+        }
+    }
+}
+
 impl Encodable for FilterClockDivisionFactor {
     fn encode(&self) -> u8 {
         match self {
             FilterClockDivisionFactor::One => { 0b0 }
             FilterClockDivisionFactor::Two => { 0b1 }
+        }
+    }
+}
+
+impl Decodable for FilterClockDivisionFactor {
+    fn decode(raw: u8) -> Result<FilterClockDivisionFactor, DecodeError> {
+        match raw {
+            0b0 => { Ok(FilterClockDivisionFactor::One) }
+            0b1 => { Ok(FilterClockDivisionFactor::Two) }
+            _ => { Err(DecodeError::Failed) }
         }
     }
 }
@@ -119,12 +168,25 @@ impl Encodable for Mdr0 {
         payload.set_cycle_count_mode(self.cycle_count_mode.encode());
         payload.set_index_mode(self.index_mode.encode());
         payload.set_filter_clock_division_factor(
-            match self.filter_clock{
-                FilterClockDivisionFactor::One => {false},
-                FilterClockDivisionFactor::Two => {true},
+            match self.filter_clock {
+                FilterClockDivisionFactor::One => { false }
+                FilterClockDivisionFactor::Two => { true }
             }
         );
 
         payload.0
+    }
+}
+
+impl Decodable for Mdr0 {
+    fn decode(raw: u8) -> Result<Mdr0, DecodeError> {
+        let payload = Mdr0Payload(raw);
+        Ok(Mdr0 {
+            quad_count_mode: QuadCountMode::decode(payload.quad_count_mode())?,
+            cycle_count_mode: CycleCountMode::decode(payload.cycle_count_mode())?,
+            index_mode: IndexMode::decode(payload.index_mode())?,
+            is_index_inverted: payload.is_index_inverted(),
+            filter_clock: FilterClockDivisionFactor::decode(payload.filter_clock_division_factor())?,
+        })
     }
 }

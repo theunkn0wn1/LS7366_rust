@@ -1,6 +1,6 @@
 use std::error::Error;
 
-
+use ls7366::ir;
 use ls7366::mdr0;
 use ls7366::traits::Encodable;
 
