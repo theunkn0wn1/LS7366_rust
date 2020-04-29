@@ -8,7 +8,7 @@ pub enum Target {
     Mdr0,
     Mdr1,
     Dtr,
-    Center,
+    Cntr,
     Otr,
     Str,
     None,
@@ -24,8 +24,8 @@ pub enum Action {
 
 #[derive(Debug)]
 pub struct InstructionRegister {
-    target: Target,
-    action: Action,
+    pub target: Target,
+    pub action: Action,
 }
 bitfield! {
     struct Payload(u8);
@@ -41,7 +41,7 @@ impl Encodable for Target {
             Target::Mdr0 => 0b001,
             Target::Mdr1 => 0b010,
             Target::Dtr => 0b011,
-            Target::Center => 0b100,
+            Target::Cntr => 0b100,
             Target::Otr => 0b101,
             Target::Str => 0b110,
             Target::None => 0b111,
@@ -56,7 +56,7 @@ impl Decodable for Target {
             0b001 => Ok(Target::Mdr0),
             0b010 => Ok(Target::Mdr1),
             0b011 => Ok(Target::Dtr),
-            0b100 => Ok(Target::Center),
+            0b100 => Ok(Target::Cntr),
             0b101 => Ok(Target::Otr),
             0b110 => Ok(Target::Str),
             0b111 => Ok(Target::None),

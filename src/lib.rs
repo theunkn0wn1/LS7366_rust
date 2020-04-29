@@ -5,10 +5,3 @@ pub mod traits;
 pub mod ir;
 pub mod errors;
 pub mod mdr1;
-bitfield! {
-    pub struct RawMessage(u8);
-    impl Debug;
-    pub discarded, set_discarded: 0,2;
-    pub register, set_register: 3,5;
-    pub action, set_action: 6,7;
-    }
