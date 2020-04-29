@@ -90,7 +90,7 @@ impl Decodable for QuadCountMode {
             0b01 => Ok(QuadCountMode::Quad1x),
             0b10 => Ok(QuadCountMode::Quad2x),
             0b11 => Ok(QuadCountMode::Quad4x),
-            _ => Err(DecodeError::Failed),
+            _ => Err(DecodeError::Failed(String::from("failed to parse QuadCountMode"))),
         }
     }
 }
@@ -113,7 +113,7 @@ impl Decodable for IndexMode {
             0b01 => Ok(IndexMode::LoadCntr),
             0b10 => Ok(IndexMode::ClearCntr),
             0b11 => Ok(IndexMode::LoadOtr),
-            _ => Err(DecodeError::Failed),
+            _ => Err(DecodeError::Failed(String::from("failed to parse IndexMode"))),
         }
     }
 }
@@ -136,7 +136,7 @@ impl Decodable for CycleCountMode {
             0b01 => Ok(CycleCountMode::SingleCycle),
             0b10 => Ok(CycleCountMode::RangeLimit),
             0b11 => Ok(CycleCountMode::ModuloN),
-            _ => Err(DecodeError::Failed),
+            _ => Err(DecodeError::Failed(String::from("failed to parse CycleCount"))),
         }
     }
 }
@@ -150,12 +150,11 @@ impl Encodable for FilterClockDivisionFactor {
     }
 }
 
-impl Decodable for FilterClockDivisionFactor {
-    fn decode(raw: u8) -> Result<FilterClockDivisionFactor, DecodeError> {
+impl FilterClockDivisionFactor {
+    pub fn decode(raw: bool) -> Result<FilterClockDivisionFactor, DecodeError> {
         match raw {
-            0b0 => Ok(FilterClockDivisionFactor::One),
-            0b1 => Ok(FilterClockDivisionFactor::Two),
-            _ => Err(DecodeError::Failed),
+            false => Ok(FilterClockDivisionFactor::One),
+            true => Ok(FilterClockDivisionFactor::Two),
         }
     }
 }

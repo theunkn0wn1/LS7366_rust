@@ -2,7 +2,7 @@ use std::error::Error;
 
 use ls7366::ir;
 use ls7366::mdr0;
-use ls7366::traits::Encodable;
+use ls7366::traits::{Encodable, Decodable};
 
 fn main() -> Result<(), Box<dyn Error>> {
 //    let device = DeviceInfo::new()?.model();
@@ -19,6 +19,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let encoded = mdr0_payload.encode();
-    println!("mdr0 := {:0>8b}", encoded);
+    println!("Mdr0 := {:0>8b}", encoded);
+
+    let decoded = mdr0::Mdr0::decode(encoded)?;
+    println!("{:?}", decoded);
+    println!("Mdr0 := {:0>8b}", decoded.encode());
     Ok(())
 }
