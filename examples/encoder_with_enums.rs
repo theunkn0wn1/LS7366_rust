@@ -20,23 +20,34 @@ fn main() -> Result<(), Box<dyn Error>> {
         is_index_inverted: false,
         filter_clock: mdr0::FilterClockDivisionFactor::One,
     };
-    let mut read_buffer: Vec<u8> = vec![];
-    spi_1.transfer(&mut read_buffer, &init_command(mdr0_payload))?;
-    println!("initialized spi1, result := {:?}", read_buffer);
-    read_buffer.clear();
-    spi_1.transfer(&mut read_buffer, &zero_dtr_command())?;
-    println!("zero'ed spi1's DTR, result := {:?}", read_buffer);
-    read_buffer.clear();
+    let mut rx_buffer: Vec<u8> = vec![];
+    let tx_buffer = init_command(mdr0_payload);
+    rx_buffer.resize(tx_buffer.len(), 0);
+    println!("init cmd :: {:?}", tx_buffer);
+    spi_1.transfer(&mut rx_buffer, &tx_buffer)?;
+    println!("initialized spi1, result := {:?}", rx_buffer);
+    rx_buffer.clear();
 
-    spi_1.transfer(&mut read_buffer, &clear_cntr_command())?;
-    println!("zero'ed spi1's CNTR, result := {:?}", read_buffer);
+    let tx_buffer = zero_dtr_command();
+    rx_buffer.resize(tx_buffer.len(), 0);
+    println!("tx buffer :: {:?}", tx_buffer);
+    spi_1.transfer(&mut rx_buffer, &tx_buffer)?;
+    println!("zero'ed spi1's DTR, result := {:?}", rx_buffer);
+    rx_buffer.clear();
+
+    let tx_buffer = clear_cntr_command();
+    rx_buffer.resize(tx_buffer.len(), 0);
+    println!("tx buffer :: {:?}", tx_buffer);
+    spi_1.transfer(&mut rx_buffer, &tx_buffer)?;
+    println!("zero'ed spi1's CNTR, result := {:?}", rx_buffer);
+
     loop {
-        read_buffer.clear();
-        read_buffer.resize(5, 0x00);
+        rx_buffer.clear();
+        rx_buffer.resize(5, 0x00);
 
         // last but NOT least, try to read the counter!
-        spi_1.transfer(&mut read_buffer, &read_cntr_command())?;
-        println!("read from SPI1, value := {:?}", read_buffer);
+        spi_1.transfer(&mut rx_buffer, &read_cntr_command())?;
+        println!("read from SPI1, value := {:?}", rx_buffer);
     }
 }
 #[allow(dead_code)]
@@ -45,8 +56,7 @@ fn init_command(configuration: mdr0::Mdr0) -> Vec<u8> {
         target: ir::Target::Mdr0,
         action: ir::Action::Write,
     };
-
-    return vec![ir_cmd.encode(), configuration.encode()];
+    return vec![ir_cmd.encode(), configuration.encode(), 0x00, 0x00];
 }
 #[allow(dead_code)]
 fn zero_dtr_command() -> Vec<u8> {
@@ -76,7 +86,7 @@ fn read_cntr_command() -> Vec<u8> {
 fn clear_cntr_command() -> Vec<u8> {
     let ir_cmd = ir::InstructionRegister {
         target: ir::Target::Cntr,
-        action: ir::Action::Clear,
+        action: ir::Action::Load,
     };
     return vec![ir_cmd.encode()];
 }

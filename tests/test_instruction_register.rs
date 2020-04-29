@@ -5,6 +5,7 @@ mod tests {
 
     const CLEAR_CNTR: u8 = 0b00100000;
     const LOAD_DTR: u8 = 0b11011000;
+    const CLEAR_STR: u8 = 0b00110000;
 
     #[test]
     fn test_ir_decode() -> Result<(), String> {
@@ -19,8 +20,9 @@ mod tests {
         }?;
         Ok(())
     }
+
     #[test]
-    fn test_load_dtr_decode() -> Result<(), String>{
+    fn test_load_dtr_decode() -> Result<(), String> {
         let result = InstructionRegister::decode(LOAD_DTR).expect("failed decode");
         match result.target {
             Target::Dtr => Ok(()),
@@ -32,11 +34,12 @@ mod tests {
         }?;
         Ok(())
     }
+
     #[test]
     fn test_load_dtr_encode() {
-        let ir = InstructionRegister{
+        let ir = InstructionRegister {
             target: Target::Dtr,
-            action: Action::Load
+            action: Action::Load,
         };
         assert_eq!(ir.encode(), LOAD_DTR);
     }
@@ -48,5 +51,31 @@ mod tests {
             action: Action::Clear,
         };
         assert_eq!(ir.encode(), CLEAR_CNTR);
+    }
+    #[test]
+    fn test_clear_str_encode(){
+        let ir = InstructionRegister{
+            target: Target::Str,
+            action: Action::Clear
+        };
+        assert_eq!(ir.encode(), CLEAR_STR)
+    }
+    #[test]
+    fn test_clear_str_decode() -> Result<(), String> {
+        let result = InstructionRegister::decode(CLEAR_STR).expect("failed decode");
+        match result.target {
+            Target::Str => Ok(()),
+            _ => Err("incorrect target".to_string())
+        }?;
+        match result.action {
+            Action::Clear => Ok(()),
+            _ => Err("incorrect action".to_string())
+        }?;
+        Ok(())
+    }
+    #[test]
+    fn test_center_encoder() -> Result<(), String>{
+        let ir = InstructionRegister::decode(0xE0).expect("failed decode");
+        Ok(())
     }
 }
