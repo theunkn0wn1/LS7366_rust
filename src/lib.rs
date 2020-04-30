@@ -1,8 +1,11 @@
 //! LS7366 Buffer encoder interface using `embedded_hal`.
+//!
 //! This driver should work with any SPI interface as long as it implements
-//! the `embedded_hal::spi::blocking::{Write, Transfer}` traits
+//! the blocking `embedded_hal` [`SPI traits`].
+//!
 //!
 //! # Examples
+//! Bare-minimum boilerplate to read from the buffer:
 //! ```no_run
 //!   use ls7366::Ls7366;
 //! // --- snip ---
@@ -30,7 +33,11 @@
 //! // --- snip ---
 //! # }
 //! ```
+//! # Advanced configuration
+//! The LS7366 has two registers dedicated to configuring the chip's various functions:
 //!
+//! [`SPI traits`]: ../embedded_hal/blocking/spi/index.html
+
 use embedded_hal::blocking::spi::{Transfer, Write};
 
 use crate::ir::{Action, InstructionRegister};
@@ -79,7 +86,7 @@ impl<SPI, SpiError> Ls7366<SPI>
     /// If the chip is already configured or another configuration is preferable,
     /// use the ([`uninit`]) constructor.
     ///
-    /// [`uninit`]: #method.uninit
+    /// [`uninit`]: #method.new_uninit
     pub fn new(iface: SPI) -> Result<Self, Error<SpiError>> {
         let mut driver = Ls7366 {
             interface: iface
@@ -119,11 +126,12 @@ impl<SPI, SpiError> Ls7366<SPI>
     }
 
     /// Creates a new driver but does NOT do any initialization actions against the chip.
-    pub fn uninit(iface: SPI) -> Self {
+    pub fn new_uninit(iface: SPI) -> Self {
         Ls7366 {
             interface: iface
         }
     }
+    /// Writes bytes into the specified register. attempting to write more than 4 bytes is an error.
     pub fn write_register(&mut self, target: ir::Target, data: &Vec<u8>) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
@@ -138,7 +146,20 @@ impl<SPI, SpiError> Ls7366<SPI>
         self.interface.write(&payload)?;
         Ok(())
     }
-
+    /// Executes a read operation against specified register, returning up to 4 bytes from the chip.
+    ///
+    /// ## Note:
+    ///
+    /// Reading from [`Str`] clears the register to zero.
+    ///
+    /// Reading from [`Dtr`] is a Noop.
+    ///
+    /// Reading from [`Cntr`] overwrites [`Otr`].
+    ///
+    /// [`Str`]:  ir/enum.Target.html#variant.Str
+    /// [`Dtr`]:  ir/enum.Target.html#variant.Dtr
+    /// [`Cntr`]: ir/enum.Target.html#variant.Cntr
+    /// [`Otr`]:  ir/enum.Target.html#variant.Otr
     pub fn read_register(&mut self, target: ir::Target) -> Result<Vec<u8>, Error<SpiError>> {
         let ir = ir::InstructionRegister {
             target,

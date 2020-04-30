@@ -5,11 +5,35 @@ use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
 pub enum Target {
+    /// Primary configuration register. See [`Mdr0`] for configurable fields.
+    ///
+    /// [`Mdr0`]: ../mdr0/struct.Mdr0.html
     Mdr0,
+    /// Secondary configuration register. See [`Mdr1`] for configurable fields.
+    ///
+    /// [`Mdr1`]: ../mdr1/struct.Mdr1.html
     Mdr1,
+    /// Input register that can be directly written to from MOSI,
+    /// contents may be transfered to [`Cntr`] under program control or hardware index signal.
+    ///
+    /// [`Cntr`]:  #variant.Cntr
+
     Dtr,
+    /// Counter register, indirectly accessible via [`Dtr`] and [`Otr`].
+    ///
+    /// [`Dtr`]:  #variant.Dtr
+    /// [`Otr`]:  #variant.Otr
+
     Cntr,
+    /// Output register readable directly from MISO, serves as dump site for instantaneous
+    /// data from [`Cntr`], allowing read without interfering with counting operations.
+    ///
+    /// [`Cntr`]:  #variant.Cntr
     Otr,
+    /// Status register, see [`Str`] for readable fields.
+    ///
+    /// [`Str`]: ../str/struct.Str.html
+
     Str,
     None,
 }
