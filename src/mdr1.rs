@@ -18,7 +18,7 @@ pub enum CounterMode {
 #[derive(Debug)]
 pub struct Mdr1 {
     pub counter_mode: CounterMode,
-    pub enable_counting: bool,
+    pub disable_counting: bool,
     pub flag_on_idx: bool,
     pub flag_on_cmp: bool,
     pub flag_on_bw: bool,
@@ -64,7 +64,7 @@ impl Encodable for Mdr1 {
     fn encode(&self) -> u8 {
         let mut payload = Payload(0x00);
         payload.set_counter_mode(self.counter_mode.encode());
-        payload.set_counting_enabled(self.enable_counting);
+        payload.set_counting_enabled(self.disable_counting);
         payload.set_flag_on_idx(self.flag_on_idx);
         payload.set_flag_on_cmp(self.flag_on_cmp);
         payload.set_flag_on_bw(self.flag_on_bw);
@@ -80,7 +80,7 @@ impl Decodable for Mdr1 {
 
         Ok(Self {
             counter_mode: CounterMode::decode(payload.counter_mode())?,
-            enable_counting: payload.counting_enabled(),
+            disable_counting: payload.counting_enabled(),
             flag_on_idx: payload.flag_on_idx(),
             flag_on_cmp: payload.flag_on_cmp(),
             flag_on_bw: payload.flag_on_bw(),

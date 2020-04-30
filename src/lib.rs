@@ -72,7 +72,7 @@ impl<SPI, SpiError> Ls7366<SPI>
         };
         let mdr1_payload = mdr1::Mdr1 {
             counter_mode: mdr1::CounterMode::Byte4,
-            enable_counting: true,
+            disable_counting: false,
             flag_on_idx: false,
             flag_on_cmp: false,
             flag_on_bw: false,
@@ -125,7 +125,7 @@ impl<SPI, SpiError> Ls7366<SPI>
 
     pub fn get_count(&mut self) -> Result<u32, Error<SpiError>> {
         let raw_result = self.read_register(ir::Target::Cntr)?;
-        Ok(utilities::vec_to_u32(&raw_result))
+        Ok(utilities::vec_to_u32(&raw_result[1..]))
     }
 
 
