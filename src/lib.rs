@@ -1,8 +1,6 @@
 use embedded_hal::blocking::spi::{Transfer, Write};
-use nb::block;
 
 use crate::ir::{Action, InstructionRegister};
-use crate::mdr0::Mdr0;
 use crate::traits::Encodable;
 
 pub mod mdr0;
@@ -50,7 +48,7 @@ impl<SPI, SpiError> Ls7366<SPI>
             action: ir::Action::Write,
         };
         if data.len() > 4 {
-            return Err((Error::PayloadTooBig));
+            return Err(Error::PayloadTooBig);
         }
         let mut payload: Vec<u8> = vec![ir_cmd.encode()];
         payload.extend(data.iter());
@@ -83,7 +81,7 @@ impl<SPI, SpiError> Ls7366<SPI>
             }
             Action::Read => {
                 tx_buffer.resize(5, 0x00);
-                let mut result = self.interface.transfer(&mut tx_buffer)?;
+                let result = self.interface.transfer(&mut tx_buffer)?;
                 Ok(Vec::from(result))
             }
             Action::Write => {
@@ -96,36 +94,4 @@ impl<SPI, SpiError> Ls7366<SPI>
             }
         }
     }
-}
-
-fn zero_dtr_command() -> Vec<u8> {
-    let ir_cmd = ir::InstructionRegister {
-        target: ir::Target::Dtr,
-        action: ir::Action::Write,
-    };
-    return vec![ir_cmd.encode(), 0x00, 0x00, 0x00, 0x00];
-}
-
-fn transfer_dtr_to_cntr_command() -> Vec<u8> {
-    let irc_cmd = ir::InstructionRegister {
-        target: ir::Target::Cntr,
-        action: ir::Action::Load,
-    };
-    return vec![irc_cmd.encode()];
-}
-
-fn read_cntr_command() -> Vec<u8> {
-    let ir_cmd = ir::InstructionRegister {
-        target: ir::Target::Cntr,
-        action: ir::Action::Read,
-    };
-    return vec![ir_cmd.encode(), 0x00, 0x00, 0x00, 0x00];
-}
-
-fn clear_cntr_command() -> Vec<u8> {
-    let ir_cmd = ir::InstructionRegister {
-        target: ir::Target::Cntr,
-        action: ir::Action::Load,
-    };
-    return vec![ir_cmd.encode()];
 }
