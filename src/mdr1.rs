@@ -5,20 +5,24 @@ use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
 pub enum CounterMode {
+    /// 4 byte counter mode.
     Byte4,
+    /// 3 byte counter mode.
     Byte3,
+    /// 2 byte counter mode.
     Byte2,
+    /// 1 byte counter mode.
     Byte1,
 }
 
 #[derive(Debug)]
 pub struct Mdr1 {
-    counter_mode: CounterMode,
-    enable_counting: bool,
-    flag_on_idx: bool,
-    flag_on_cmp: bool,
-    flag_on_bw: bool,
-    flag_on_cy: bool,
+    pub counter_mode: CounterMode,
+    pub enable_counting: bool,
+    pub flag_on_idx: bool,
+    pub flag_on_cmp: bool,
+    pub flag_on_bw: bool,
+    pub flag_on_cy: bool,
 }
 
 bitfield! {
