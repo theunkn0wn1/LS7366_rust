@@ -73,9 +73,4 @@ mod tests {
         }?;
         Ok(())
     }
-    #[test]
-    fn test_center_encoder() -> Result<(), String>{
-        let ir = InstructionRegister::decode(0xE0).expect("failed decode");
-        Ok(())
-    }
 }
