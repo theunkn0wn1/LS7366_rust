@@ -6,9 +6,8 @@
 //! use rppal::spi::Spi;
 //! fn your_code(spi_interface: Spi){
 //!     // Create an instance of the driver from some HAL SPI implementation
-//!     let mut driver = Ls7366::new(spi_interface);
+//!     let mut driver = Ls7366::new(spi_interface).unwrap();
 //!     // Initialize the chip with a sensible default configuration.
-//!     driver.sensible_init()?;
 //! }
 //! ```
 //!
@@ -22,6 +21,7 @@ pub mod traits;
 pub mod ir;
 pub mod errors;
 pub mod mdr1;
+mod utilities;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Error<SpiError> {
@@ -52,10 +52,48 @@ pub struct Ls7366<SPI> {
 
 impl<SPI, SpiError> Ls7366<SPI>
     where SPI: Transfer<u8, Error=SpiError> + Write<u8, Error=SpiError> {
-    pub fn new(iface: SPI) -> Self {
-        return Ls7366 {
+    /// Creates a new driver and initializes the Chip to some sensible default values.
+    /// This will zero the chip's counter, configure it to 4 byte count mode (full range)
+    /// and to treat every 4th quadrature pulse as a increment.
+    ///
+    /// If another configuration is desirable, see [`mdr0.Mdr0`] and [`mdr1.Mdr1`]
+    /// for all available options.
+    pub fn new(iface: SPI) -> Result<Self, Error<SpiError>> {
+        let mut driver = Ls7366 {
             interface: iface
         };
+        // Creating configurations for the two MDR configuration registers
+        let mdr0_payload = mdr0::Mdr0 {
+            quad_count_mode: mdr0::QuadCountMode::Quad4x,
+            cycle_count_mode: mdr0::CycleCountMode::FreeRunning,
+            index_mode: mdr0::IndexMode::DisableIndex,
+            is_index_inverted: false,
+            filter_clock: mdr0::FilterClockDivisionFactor::One,
+        };
+        let mdr1_payload = mdr1::Mdr1 {
+            counter_mode: mdr1::CounterMode::Byte4,
+            enable_counting: true,
+            flag_on_idx: false,
+            flag_on_cmp: false,
+            flag_on_bw: false,
+            flag_on_cy: false,
+        };
+
+        // Write primary configuration to chip.
+        driver.write_register(ir::Target::Mdr0, &vec![mdr0_payload.encode()])?;
+        // Write secondary configuration to chip.
+        driver.write_register(ir::Target::Mdr1, &vec![mdr1_payload.encode()])?;
+        // Zero Dtr to prepare a write into Cntr.
+        driver.write_register(ir::Target::Dtr, &vec![0x00, 0x00, 0x00, 0x00])?;
+        // Load Dtr into Cntr.
+        driver.act(
+            ir::InstructionRegister {
+                target: ir::Target::Cntr,
+                action: ir::Action::Load,
+            },
+            vec![],
+        )?;
+        Ok(driver)
     }
 
     pub fn write_register(&mut self, target: ir::Target, data: &Vec<u8>) -> Result<(), Error<SpiError>> {
@@ -84,49 +122,12 @@ impl<SPI, SpiError> Ls7366<SPI>
         Ok(Vec::from(result))
     }
 
-    pub fn get_count(&mut self) -> Result<u64, Error<SpiError>> {
-        Ok(0)
-    }
-    /// Initializes the Chip to some sensible default values.
-    /// This will zero the chip's counter, configure it to 4 byte count mode (full range)
-    /// and to treat every 4th quadrature pulse as a increment.
-    ///
-    /// If another configuration is desirable, see [`mdr0.Mdr0`] and [`mdr1.Mdr1`]
-    /// for all available options.
-    pub fn sensible_init(&mut self) -> Result<(), Error<SpiError>> {
-        // Creating configurations for the two MDR configuration registers
-        let mdr0_payload = mdr0::Mdr0 {
-            quad_count_mode: mdr0::QuadCountMode::Quad4x,
-            cycle_count_mode: mdr0::CycleCountMode::FreeRunning,
-            index_mode: mdr0::IndexMode::DisableIndex,
-            is_index_inverted: false,
-            filter_clock: mdr0::FilterClockDivisionFactor::One,
-        };
-        let mdr1_payload = mdr1::Mdr1 {
-            counter_mode: mdr1::CounterMode::Byte4,
-            enable_counting: true,
-            flag_on_idx: false,
-            flag_on_cmp: false,
-            flag_on_bw: false,
-            flag_on_cy: false,
-        };
 
-        // Write primary configuration to chip.
-        self.write_register(ir::Target::Mdr0, &vec![])?;
-        // Write secondary configuration to chip.
-        self.write_register(ir::Target::Mdr1, &vec![])?;
-        // Zero Dtr to prepare a write into Cntr.
-        self.write_register(ir::Target::Dtr, &vec![0x00, 0x00, 0x00, 0x00])?;
-        // Load Dtr into Cntr.
-        self.act(
-            ir::InstructionRegister {
-                target: ir::Target::Cntr,
-                action: ir::Action::Load,
-            },
-            vec![],
-        )?;
-        Ok(())
+    pub fn get_count(&mut self) -> Result<u32, Error<SpiError>> {
+        let raw_result = self.read_register(ir::Target::Cntr)?;
+        Ok(utilities::vec_to_u32(&raw_result))
     }
+
 
     /// Performs a transaction against the chip.
     ///
