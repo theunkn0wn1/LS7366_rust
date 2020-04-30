@@ -1,4 +1,6 @@
-//! LS7366 Buffer encoder interface via embedded_hal.
+//! LS7366 Buffer encoder interface using `embedded_hal`.
+//! This driver should work with any SPI interface as long as it implements
+//! the `embedded_hal::spi::blocking::{Write, Transfer}` traits
 //!
 //! # Examples
 //! ```no_run
@@ -74,8 +76,10 @@ impl<SPI, SpiError> Ls7366<SPI>
     /// This will zero the chip's counter, configure it to 4 byte count mode (full range)
     /// and to treat every 4th quadrature pulse as a increment.
     ///
-    /// If another configuration is desirable, see [`mdr0.Mdr0`] and [`mdr1.Mdr1`]
-    /// for all available options.
+    /// If the chip is already configured or another configuration is preferable,
+    /// use the ([`uninit`]) constructor.
+    ///
+    /// [`uninit`]: #method.uninit
     pub fn new(iface: SPI) -> Result<Self, Error<SpiError>> {
         let mut driver = Ls7366 {
             interface: iface
@@ -114,6 +118,12 @@ impl<SPI, SpiError> Ls7366<SPI>
         Ok(driver)
     }
 
+    /// Creates a new driver but does NOT do any initialization actions against the chip.
+    pub fn uninit(iface: SPI) -> Self {
+        Ls7366 {
+            interface: iface
+        }
+    }
     pub fn write_register(&mut self, target: ir::Target, data: &Vec<u8>) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
