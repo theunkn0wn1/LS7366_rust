@@ -1,10 +1,10 @@
 use std::error::Error;
+use std::thread::sleep;
+use std::time::Duration;
 
 use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 
 use ls7366::Ls7366;
-use std::thread::sleep;
-use std::time::Duration;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // create an instance of an SPI object
@@ -18,7 +18,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Loop and read the counter.
     loop {
         let result = spi_driver.get_count()?;
+        let status = spi_driver.get_status()?;
+        println!("read data:= {:?}\n status := {:?}", result, status);
         sleep(Duration::from_secs(1));
-        println!("read data:= {:?}", result);
     }
 }
