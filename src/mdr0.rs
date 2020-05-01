@@ -74,10 +74,15 @@ pub enum FilterClockDivisionFactor {
 #[derive(Debug)]
 /// Representation of the Mdr0 register.
 pub struct Mdr0 {
+    /// Quadrature count mode
     pub quad_count_mode: QuadCountMode,
+    /// Cycle behavior
     pub cycle_count_mode: CycleCountMode,
+    /// Behavior of the index pin.
     pub index_mode: IndexMode,
+    /// Flag for inverting the Index pin.
     pub is_index_inverted: bool,
+    /// Index Filter frequency.
     pub filter_clock: FilterClockDivisionFactor,
 }
 

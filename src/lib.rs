@@ -173,12 +173,7 @@ impl<SPI, SpiError> Ls7366<SPI>
             vec![],
         )?;
         // clear status register.
-        driver.act(
-            ir::InstructionRegister {
-                target: ir::Target::Str,
-                action: ir::Action::Clear,
-            }, vec![],
-        )?;
+        driver.clear_status()?;
         Ok(driver)
     }
 
@@ -235,7 +230,18 @@ impl<SPI, SpiError> Ls7366<SPI>
             Err(error) => Err(Error::EncodeError(error)),
         }
     }
-
+    /// Clears the [`Str`] status register to zero.
+    ///
+    /// [`Str`]:  ir/enum.Target.html#variant.Str
+    pub fn clear_status(&mut self) -> Result<(), Error<SpiError>> {
+        self.act(
+            ir::InstructionRegister {
+                target: Target::Str,
+                action: Action::Clear,
+            }, vec![],
+        )?;
+        Ok(())
+    }
     /// Reads the chip's current count, sets the sign bit appropriate to the status register
     pub fn get_count(&mut self) -> Result<i64, Error<SpiError>> {
         let raw_result = self.read_register(ir::Target::Cntr)?;
