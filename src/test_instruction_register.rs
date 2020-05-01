@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use ls7366::ir::{Action, InstructionRegister, Target};
-    use ls7366::traits::{Decodable, Encodable};
+    use crate::ir::{Action, InstructionRegister, Target};
+    use crate::traits::{Decodable, Encodable};
 
     const CLEAR_CNTR: u8 = 0b00100000;
     const LOAD_DTR: u8 = 0b11011000;

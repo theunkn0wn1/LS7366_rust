@@ -5,10 +5,6 @@
 //! Possible actions are enumerated in [`Action`].
 //!
 //! Possible targets are enumerated in [`Target`].
-//! # Example
-//! ```
-//!
-//! ```
 //!
 //! [`Action`]: ./enum.Action.html
 //! [`Target`]: ./enum.Target.html

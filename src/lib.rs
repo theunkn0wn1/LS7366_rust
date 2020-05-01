@@ -33,25 +33,70 @@
 //! // --- snip ---
 //! # }
 //! ```
-//! # Advanced configuration
+//! ## Advanced configuration
 //! The LS7366 has two registers dedicated to configuring the chip's various functions:
-//! `Mdr0` and `Mdr1`.
+//! [`Mdr0`] and [`Mdr1`].
+//!
+//! Configuring the chip can be accomplished by writing into these two registers.
+//!
+//! **Manually configuring these registers is **not** required when using [`Ls7366::new`].**
+//!
+//! 1. Build an instance of [`Mdr0`] and [`Mdr1`] with the desired configuration.
+//! 2. Write these instances into the relevant registers.
+//! ```no_run
+//! use ls7366::mdr0::{QuadCountMode, CycleCountMode, FilterClockDivisionFactor,IndexMode, Mdr0};
+//! use ls7366::mdr1::{CounterMode, Mdr1};
+//! use ls7366::{Ls7366, Target, Encodable};
+//! # use rppal::spi::Spi; // concrete SPI implementation
+//! # use std::error::Error;
+//! // --- snip ---
+//! # fn your_code(spi_driver: &mut Ls7366<Spi>) -> Result<(), Box<dyn Error>> {
+//!     let mdr0_configuration = Mdr0{
+//!         quad_count_mode: QuadCountMode::Quad2x,
+//!         filter_clock : FilterClockDivisionFactor::Two,
+//!         index_mode: IndexMode::ClearCntr,
+//!         cycle_count_mode: CycleCountMode::SingleCycle,
+//!         is_index_inverted: false
+//!     };
+//!     let mdr1_configuration = Mdr1{
+//!         counter_mode: CounterMode::Byte3,
+//!         // --- Snip ---
+//!         # disable_counting:true,
+//!         # flag_on_bw: false,
+//!         # flag_on_idx: false,
+//!         # flag_on_cmp: false,
+//!         # flag_on_cy: false,
+//!     };
+//!
+//!     spi_driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()])?;
+//!     spi_driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()])?;
+//!     // --- Snip ---
+//!     # Ok(())
+//! }
+//! ```
 //!
 //! [`SPI traits`]: ../embedded_hal/blocking/spi/index.html
+//! [`Mdr0`]: ./mdr0/struct.Mdr0.html
+//! [`Mdr1`]: ./mdr1/struct.Mdr1.html
+//! [`Ls7366::new`]: ./struct.Ls7366.html#method.new
 
 use embedded_hal::blocking::spi::{Transfer, Write};
 
-use crate::ir::{Action, InstructionRegister};
+pub use crate::ir::{Action, Target};
+use crate::ir::InstructionRegister;
 use crate::str_register::Str;
-use crate::traits::{Decodable, Encodable};
+use crate::traits::Decodable;
+pub use crate::traits::Encodable;
 
 pub mod mdr0;
-pub mod traits;
 pub mod ir;
-pub mod errors;
 pub mod mdr1;
 pub mod str_register;
+mod traits;
+mod errors;
+mod mocks;
 mod utilities;
+mod test_instruction_register;
 
 #[derive(Clone, Debug)]
 pub enum Error<SpiError> {
