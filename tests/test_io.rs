@@ -10,7 +10,7 @@ mod tests {
     use ls7366::str_register;
 
     #[test]
-    fn test_read() -> Result<(), Box<dyn Error>> {
+    fn test_get_count() -> Result<(), Box<dyn Error>> {
         let expectations = [
             SpiTransaction::transfer(vec![InstructionRegister {
                 target: Target::Cntr,
@@ -90,6 +90,32 @@ mod tests {
             assert_eq!(&result, payload);
         }
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_write_register() -> Result<(), Box<dyn Error>> {
+        let expectations = [
+            // Dtr write
+            SpiTransaction::write(vec![InstructionRegister {
+                target: Target::Dtr,
+                action: Action::Write,
+            }.encode(), 0xBA, 0xAD, 0xBE, 0xEF],
+            ),
+
+            // mdr0 write
+            SpiTransaction::write(vec![InstructionRegister {
+                target: Target::Mdr0,
+                action: Action::Write,
+            }.encode(), 0xFD, 0xFD, 0xFD, 0xFD],
+            ),
+        ];
+
+        let spi = Mock::new(&expectations);
+        let mut driver = Ls7366::new_uninit(spi);
+
+        driver.write_register(Target::Dtr, &vec![0xBA, 0xAD, 0xBE, 0xEF])?;
+        driver.write_register(Target::Mdr0, &vec![0xFD, 0xFD, 0xFD, 0xFD])?;
         Ok(())
     }
 }
