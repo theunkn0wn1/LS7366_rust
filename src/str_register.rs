@@ -1,15 +1,19 @@
+//! the Str register houses the chip's status. This register is Read only.
+//!
 use bitfield::bitfield;
 
 use crate::errors::EncoderError;
 use crate::traits::Decodable;
 
 #[derive(Debug)]
+/// the sign of the counter's contents.
 pub enum SignBit {
     Negative,
     Positive,
 }
 
 #[derive(Debug)]
+/// Counting direction, corresponds to the motion of the attached encoder.
 pub enum Direction {
     Up,
     Down,
@@ -17,6 +21,7 @@ pub enum Direction {
 
 
 #[derive(Debug)]
+/// Representation of the status register.
 pub struct Str {
     /// Carry (CNTR overflow) latch.
     pub cary: bool,
@@ -32,7 +37,7 @@ pub struct Str {
     pub power_loss: bool,
     /// Direction of count.
     pub count_direction: Direction,
-    /// Sign.
+    /// Sign bit for the counter (Cntr register).
     pub sign_bit: SignBit,
 }
 bitfield! {

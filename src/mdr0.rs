@@ -1,3 +1,9 @@
+//! The Mdr0 register
+//! Houses the primary configuration for the chip.
+//!
+//! Public representation is via the [`Mdr0`] struct.
+//!
+//! [`Mdr0`]: ./struct.Mdr0.html
 use bitfield::bitfield;
 
 use crate::errors::EncoderError;
@@ -16,7 +22,9 @@ pub enum QuadCountMode {
 }
 
 #[derive(Debug)]
+/// controls the behavior of the `Index` pin on the chip.
 pub enum IndexMode {
+    /// disables input on the `index` pin.
     DisableIndex,
     /// configure index as the "load CNTR" input (transfers DTR to CNTR)
     LoadCntr,
@@ -53,6 +61,7 @@ pub enum FilterClockDivisionFactor {
 }
 
 #[derive(Debug)]
+/// Representation of the Mdr0 register.
 pub struct Mdr0 {
     pub quad_count_mode: QuadCountMode,
     pub cycle_count_mode: CycleCountMode,

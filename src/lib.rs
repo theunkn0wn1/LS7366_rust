@@ -35,6 +35,7 @@
 //! ```
 //! # Advanced configuration
 //! The LS7366 has two registers dedicated to configuring the chip's various functions:
+//! `Mdr0` and `Mdr1`.
 //!
 //! [`SPI traits`]: ../embedded_hal/blocking/spi/index.html
 

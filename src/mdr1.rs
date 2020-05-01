@@ -1,9 +1,17 @@
+//! Secondary 8 bit configuration register.
+//! Holds configurations for the [Counter Size], and the various occurrence flags. See datasheet for
+//! details.
+//!
+//! [Counter Size]: ./enum.CounterMode.html
 use bitfield::bitfield;
 
 use crate::errors::EncoderError;
 use crate::traits::{Decodable, Encodable};
 
 #[derive(Debug)]
+/// Programmable size of the [`Cntr`] register.
+///
+/// [`Cntr`]: ../ir/enum.Target.html#variant.Cntr
 pub enum CounterMode {
     /// 4 byte counter mode.
     Byte4,
@@ -16,8 +24,14 @@ pub enum CounterMode {
 }
 
 #[derive(Debug)]
+/// Extended configuration options, mainly used for occurrence flags. (See datasheet).
 pub struct Mdr1 {
+    /// programmed size of the counter([`Cntr`]) register.
+    ///
+    /// [`Cntr`]: ../ir/enum.Target.html#variant.Cntr
+
     pub counter_mode: CounterMode,
+    /// Controls whether counting is enabled (false) or not (true)
     pub disable_counting: bool,
     pub flag_on_idx: bool,
     pub flag_on_cmp: bool,

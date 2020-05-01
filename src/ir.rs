@@ -1,3 +1,18 @@
+//! Instruction register.
+//! Performing any actions against the chip require writing into the IR at the start of the
+//! transaction.
+//!
+//! Possible actions are enumerated in [`Action`].
+//!
+//! Possible targets are enumerated in [`Target`].
+//! # Example
+//! ```
+//!
+//! ```
+//!
+//! [`Action`]: ./enum.Action.html
+//! [`Target`]: ./enum.Target.html
+
 use bitfield::bitfield;
 
 use crate::errors::EncoderError;
@@ -23,7 +38,6 @@ pub enum Target {
     ///
     /// [`Dtr`]:  #variant.Dtr
     /// [`Otr`]:  #variant.Otr
-
     Cntr,
     /// Output register readable directly from MISO, serves as dump site for instantaneous
     /// data from [`Cntr`], allowing read without interfering with counting operations.
@@ -33,7 +47,7 @@ pub enum Target {
 
     /// Status register, see [`Str`] for readable fields.
     ///
-    /// [`Str`]: ../str/struct.Str.html
+    /// [`Str`]: ../str_register/struct.Str.html
     Str,
     None,
 }
