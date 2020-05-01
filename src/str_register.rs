@@ -56,8 +56,8 @@ bitfield! {
 impl SignBit {
     fn decode(raw: bool) -> Result<Self, EncoderError> {
         match raw {
-            false => Ok(SignBit::Negative),
-            true => Ok(SignBit::Positive),
+            true => Ok(SignBit::Negative),
+            false => Ok(SignBit::Positive),
         }
     }
 }
