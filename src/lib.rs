@@ -41,7 +41,7 @@
 use embedded_hal::blocking::spi::{Transfer, Write};
 
 use crate::ir::{Action, InstructionRegister};
-use crate::str::Str;
+use crate::str_register::Str;
 use crate::traits::{Decodable, Encodable};
 
 pub mod mdr0;
@@ -49,7 +49,7 @@ pub mod traits;
 pub mod ir;
 pub mod errors;
 pub mod mdr1;
-pub mod str;
+pub mod str_register;
 mod utilities;
 
 #[derive(Clone, Debug)]
@@ -185,9 +185,14 @@ impl<SPI, SpiError> Ls7366<SPI>
     }
 
     /// Reads the chip's current count, sets the sign bit appropriate to the status register
-    pub fn get_count(&mut self) -> Result<u32, Error<SpiError>> {
+    pub fn get_count(&mut self) -> Result<i64, Error<SpiError>> {
         let raw_result = self.read_register(ir::Target::Cntr)?;
-        Ok(utilities::vec_to_u32(&raw_result[1..]))
+        let status = self.get_status()?;
+        let count = utilities::vec_to_i64(&raw_result[1..]);
+        match status.sign_bit {
+            str_register::SignBit::Negative => Ok(count * -1),
+            str_register::SignBit::Positive => Ok(count),
+        }
     }
 
 

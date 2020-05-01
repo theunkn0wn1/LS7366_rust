@@ -4,13 +4,13 @@ use crate::errors::EncoderError;
 use crate::traits::Decodable;
 
 #[derive(Debug)]
-enum SignBit {
+pub enum SignBit {
     Negative,
     Positive,
 }
 
 #[derive(Debug)]
-enum Direction {
+pub enum Direction {
     Up,
     Down,
 }
@@ -19,21 +19,21 @@ enum Direction {
 #[derive(Debug)]
 pub struct Str {
     /// Carry (CNTR overflow) latch.
-    cary: bool,
+    pub cary: bool,
     /// Borrow (CNTR underflow) latch.
-    borrow: bool,
+    pub borrow: bool,
     /// Compare (CNTR = DTR) latch.
-    compare: bool,
+    pub compare: bool,
     /// Index latch.
-    index: bool,
+    pub index: bool,
     /// Counter enabled status.
-    count_enabled: bool,
+    pub count_enabled: bool,
     /// Power Loss latch. Set to true with power on.
-    power_loss: bool,
+    pub power_loss: bool,
     /// Direction of count.
-    count_direction: Direction,
+    pub count_direction: Direction,
     /// Sign.
-    sign_bit: SignBit,
+    pub sign_bit: SignBit,
 }
 bitfield! {
     struct Payload(u8);
