@@ -6,6 +6,7 @@ use crate::errors::EncoderError;
 use crate::traits::Decodable;
 
 #[derive(Debug)]
+#[derive(PartialEq, Eq)]
 /// the sign of the counter's contents.
 pub enum SignBit {
     Negative,
@@ -13,6 +14,7 @@ pub enum SignBit {
 }
 
 #[derive(Debug)]
+#[derive(PartialEq, Eq)]
 /// Counting direction, corresponds to the motion of the attached encoder.
 pub enum Direction {
     Up,
@@ -52,7 +54,6 @@ bitfield! {
     pub index, _: 6;
     pub count_enabled, _: 7;
 }
-
 impl SignBit {
     fn decode(raw: bool) -> Result<Self, EncoderError> {
         match raw {
@@ -61,7 +62,6 @@ impl SignBit {
         }
     }
 }
-
 
 impl Direction {
     fn decode(raw: bool) -> Result<Self, EncoderError> {
@@ -88,3 +88,17 @@ impl Decodable for Str {
         })
     }
 }
+
+impl PartialEq for Str {
+    fn eq(&self, other: &Self) -> bool {
+        self.count_enabled == other.count_enabled &&
+            self.cary == other.cary &&
+            self.borrow == other.borrow &&
+            self.sign_bit == other.sign_bit &&
+            self.power_loss == other.power_loss &&
+            self.index == other.index &&
+            self.count_direction == other.count_direction &&
+            self.compare == other.compare
+    }
+}
+
