@@ -172,6 +172,13 @@ impl<SPI, SpiError> Ls7366<SPI>
             },
             vec![],
         )?;
+        // clear status register.
+        driver.act(
+            ir::InstructionRegister {
+                target: ir::Target::Str,
+                action: ir::Action::Clear,
+            }, vec![],
+        )?;
         Ok(driver)
     }
 
