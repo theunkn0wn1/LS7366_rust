@@ -3,7 +3,8 @@ name = "ls7366"
 version = "0.1.0"
 authors = ["joshua salzedo <thHunkn0WNd@gmail.com>"]
 edition = "2018"
-
+license = "Apache-2.0"
+description = "Rust interface to the LS7366 quadrature encoder buffer."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
