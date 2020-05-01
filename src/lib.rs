@@ -41,19 +41,24 @@
 use embedded_hal::blocking::spi::{Transfer, Write};
 
 use crate::ir::{Action, InstructionRegister};
-use crate::traits::Encodable;
+use crate::str::Str;
+use crate::traits::{Decodable, Encodable};
 
 pub mod mdr0;
 pub mod traits;
 pub mod ir;
 pub mod errors;
 pub mod mdr1;
+pub mod str;
 mod utilities;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum Error<SpiError> {
+    // Underlying SPI interface error
     SpiError(SpiError),
-    IdMismatch(u8),
+    // Failed to encode / decode payload
+    EncodeError(errors::EncoderError),
+    // Request to write payload larger than target register.
     PayloadTooBig,
 }
 
@@ -170,8 +175,16 @@ impl<SPI, SpiError> Ls7366<SPI>
         let result = self.interface.transfer(&mut tx_buffer)?;
         Ok(Vec::from(result))
     }
+    pub fn get_status(&mut self) -> Result<Str, Error<SpiError>> {
+        let raw_result = self.read_register(ir::Target::Str)?;
+        let result = Str::decode(raw_result[1]);
+        match result {
+            Ok(data) => Ok(data),
+            Err(error) => Err(Error::EncodeError(error)),
+        }
+    }
 
-
+    /// Reads the chip's current count, sets the sign bit appropriate to the status register
     pub fn get_count(&mut self) -> Result<u32, Error<SpiError>> {
         let raw_result = self.read_register(ir::Target::Cntr)?;
         Ok(utilities::vec_to_u32(&raw_result[1..]))

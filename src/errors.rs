@@ -1,10 +1,9 @@
 use std::error::Error;
 use bitfield::fmt::Formatter;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum EncoderError {
     FailedDecode(String),
-    FailedIO(String),
 }
 impl Error for EncoderError {
 

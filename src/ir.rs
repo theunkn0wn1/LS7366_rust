@@ -30,10 +30,10 @@ pub enum Target {
     ///
     /// [`Cntr`]:  #variant.Cntr
     Otr,
+
     /// Status register, see [`Str`] for readable fields.
     ///
     /// [`Str`]: ../str/struct.Str.html
-
     Str,
     None,
 }
