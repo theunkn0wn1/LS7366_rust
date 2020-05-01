@@ -34,7 +34,7 @@ mod tests {
             )
         ];
 
-        let mut spi = Mock::new(&expectations);
+        let spi = Mock::new(&expectations);
         let mut driver = Ls7366::new_uninit(spi);
 
         let result = driver.get_count()?;
@@ -57,7 +57,7 @@ mod tests {
             SpiTransaction::transfer(vec![InstructionRegister {
                 target: Target::Str,
                 action: Action::Read,
-            }.encode(), 0x00, 0x00, 0x00, 0x00], vec![0x00, 0x00, 0x00, 0x00, 0b11111111],
+            }.encode(), 0x00, 0x00, 0x00, 0x00], vec![0x00, 0x00, 0x00, 0x00, 0b11110101],
             )
         ];
         let expected_results = [
@@ -82,11 +82,12 @@ mod tests {
                 sign_bit: str_register::SignBit::Negative,
             }
         ];
-        let mut spi = Mock::new(&expectations);
+        let spi = Mock::new(&expectations);
         let mut driver = Ls7366::new_uninit(spi);
 
         for payload in expected_results.iter() {
-            assert_eq!(&driver.get_status()?, payload);
+            let result = driver.get_status()?;
+            assert_eq!(&result, payload);
         }
 
         Ok(())

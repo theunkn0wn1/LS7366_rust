@@ -13,6 +13,20 @@ pub enum SignBit {
     Positive,
 }
 
+bitfield! {
+    struct Payload(u8);
+    impl Debug;
+    pub sign, _: 0;
+    pub count_direction,_: 1;
+    pub power_loss, _ : 2;
+    pub count_enabled, _: 3;
+    pub index, _: 4;
+    pub compare, _: 5;
+    pub borrow_, _: 6;
+    pub cary, _: 7;
+}
+
+
 #[derive(Debug)]
 #[derive(PartialEq, Eq)]
 /// Counting direction, corresponds to the motion of the attached encoder.
@@ -20,7 +34,6 @@ pub enum Direction {
     Up,
     Down,
 }
-
 
 #[derive(Debug)]
 /// Representation of the status register.
@@ -42,18 +55,7 @@ pub struct Str {
     /// Sign bit for the counter (Cntr register).
     pub sign_bit: SignBit,
 }
-bitfield! {
-    struct Payload(u8);
-    impl Debug;
-    pub sign, _: 0;
-    pub count_direction,_: 1;
-    pub power_loss, _ : 2;
-    pub cary, _: 3;
-    pub borrow_, _: 4;
-    pub compare, _: 5;
-    pub index, _: 6;
-    pub count_enabled, _: 7;
-}
+
 impl SignBit {
     fn decode(raw: bool) -> Result<Self, EncoderError> {
         match raw {
