@@ -75,7 +75,7 @@
 //! }
 //! ```
 //!
-//! [`SPI traits`]: ../embedded_hal/blocking/spi/index.html
+//! [`SPI traits`]: https://docs.rs/embedded-hal/0.2.3/embedded_hal/blocking/spi/index.html
 //! [`Mdr0`]: ./mdr0/struct.Mdr0.html
 //! [`Mdr1`]: ./mdr1/struct.Mdr1.html
 //! [`Ls7366::new`]: ./struct.Ls7366.html#method.new
