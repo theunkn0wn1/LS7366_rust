@@ -223,7 +223,7 @@ impl<SPI, SpiError> Ls7366<SPI>
     }
     pub fn get_status(&mut self) -> Result<Str, Error<SpiError>> {
         let raw_result = self.read_register(ir::Target::Str)?;
-        let result = Str::decode(raw_result[1]);
+        let result = Str::decode(raw_result[4]);
         match result {
             Ok(data) => Ok(data),
             Err(error) => Err(Error::EncodeError(error)),
