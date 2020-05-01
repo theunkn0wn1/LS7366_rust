@@ -12,3 +12,4 @@ bitfield = "0.13.2"
 
 [dev-dependencies]
 rppal = { version = "0.11.3", features = ["hal"] }
+embedded-hal-mock = "0.7.1"

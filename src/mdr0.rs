@@ -1,9 +1,19 @@
-//! The Mdr0 register
-//! Houses the primary configuration for the chip.
+//! Primary configuration
 //!
 //! Public representation is via the [`Mdr0`] struct.
 //!
+//! Exposes configurations for
+//!  - [`Quadrature count mode`]: Controls the interpretation of the input encoder signals
+//!  - [`Index pin behavior`]: Controls the behavior of the Index pin.
+//!  - [`Count cycle mode`]: Controls the behavior of the counter.
+//!  - [`Filter clock division factor`]: Controls the rate of the Filter clock, for validating Index inputs.
+//!
 //! [`Mdr0`]: ./struct.Mdr0.html
+//! [`Quadrature count mode`]: ./enum.QuadCountMode.html
+//! [`Index pin behavior`]: ./enum.IndexMode.html
+//! [`Count cycle mode`]: ./enum.CycleCountMode.html
+//! [`Filter clock division factor`]: ./enum.FilterClockDivisionFactor.html
+
 use bitfield::bitfield;
 
 use crate::errors::EncoderError;
@@ -53,6 +63,7 @@ pub enum CycleCountMode {
 }
 
 #[derive(Debug)]
+/// Controls Filter clock frequency, used to validate Index inputs.
 pub enum FilterClockDivisionFactor {
     /// Filter clock division factor = 1
     One,

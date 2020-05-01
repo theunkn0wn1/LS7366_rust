@@ -94,9 +94,9 @@ pub mod mdr1;
 pub mod str_register;
 mod traits;
 mod errors;
-mod mocks;
 mod utilities;
 mod test_instruction_register;
+mod test_io;
 
 #[derive(Clone, Debug)]
 pub enum Error<SpiError> {
