@@ -43,14 +43,19 @@
 //!
 //! 1. Build an instance of [`Mdr0`] and [`Mdr1`] with the desired configuration.
 //! 2. Write these instances into the relevant registers.
-//! ```no_run
+//! ```
 //! use ls7366::mdr0::{QuadCountMode, CycleCountMode, FilterClockDivisionFactor,IndexMode, Mdr0};
 //! use ls7366::mdr1::{CounterMode, Mdr1};
 //! use ls7366::{Ls7366, Target, Encodable};
-//! # use rppal::spi::Spi; // concrete SPI implementation
-//! # use std::error::Error;
+//! use embedded_hal_mock::spi::Mock;
+//! use embedded_hal_mock::spi::Transaction as SpiTransaction;
+//! # let expectations = [
+//! #     SpiTransaction::write(vec![0b10001000, 0b10100110]),
+//! #     SpiTransaction::write(vec![0b10010000, 0b00000101])
+//! # ];
+//! # let spi = Mock::new(&expectations);
+//! # let mut driver = Ls7366::new_uninit(spi);
 //! // --- snip ---
-//! # fn your_code(spi_driver: &mut Ls7366<Spi>) {
 //!     let mdr0_configuration = Mdr0{
 //!         quad_count_mode: QuadCountMode::Quad2x,
 //!         filter_clock : FilterClockDivisionFactor::Two,
@@ -68,10 +73,9 @@
 //!         # flag_on_cy: false,
 //!     };
 //!
-//!     spi_driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()]).unwrap();
-//!     spi_driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()]).unwrap();
-//!     // --- Snip ---
-//! }
+//!     driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()]).unwrap();
+//!     driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()]).unwrap();
+//!
 //! ```
 //!
 //! [`SPI traits`]: https://docs.rs/embedded-hal/0.2.3/embedded_hal/blocking/spi/index.html
