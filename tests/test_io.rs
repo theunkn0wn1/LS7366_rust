@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod tests {
-    
-
     use embedded_hal_mock::spi::{Mock, Transaction as SpiTransaction};
 
     use ls7366::{Action, Encodable, Target};
@@ -44,7 +42,7 @@ mod tests {
     }
 
     #[test]
-    fn test_status() {
+    fn test_status_a() {
         let expectations = [
             // STR read, will return positive sign
             SpiTransaction::transfer(vec![InstructionRegister {
@@ -88,6 +86,30 @@ mod tests {
             let result = driver.get_status().unwrap();
             assert_eq!(&result, payload);
         }
+    }
+
+    #[test]
+    fn test_status_b() {
+        let expectations = [
+            // STR read, will return positive sign
+            SpiTransaction::transfer(vec![InstructionRegister {
+                target: Target::Str,
+                action: Action::Read,
+            }.encode(), 0x00, 0x00, 0x00, 0x00], vec![0x00, 0x00, 0x00, 0x00, 0b00000100],
+            )];
+        let spi = Mock::new(&expectations);
+        let mut driver = Ls7366::new_uninit(spi);
+        let result = driver.get_status().unwrap();
+        assert_eq!(result, str_register::Str {
+            cary: false,
+            borrow: false,
+            compare: false,
+            index: false,
+            count_enabled: false,
+            power_loss: true,
+            count_direction: str_register::Direction::Down,
+            sign_bit: str_register::SignBit::Positive,
+        });
     }
 
     #[test]
