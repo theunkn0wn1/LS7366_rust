@@ -3,6 +3,8 @@
 //! This driver should work with any SPI interface as long as it implements
 //! the blocking `embedded_hal` [`SPI traits`].
 //!
+//! The library is built with `no_std`.
+//!
 //!
 //! # Examples
 //! Bare-minimum boilerplate to read from the buffer:

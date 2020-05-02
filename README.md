@@ -7,6 +7,9 @@ This driver should work for any concrete `embedded_hal::blocking::spi` implement
 Testing was done against a [Dual LS7366R buffer chip](https://www.superdroidrobots.com/shop/item.aspx/dual-ls7366r-quadrature-encoder-buffer/1523/)
 On a RPi Model 4B.
 
+### Bonus Feature!
+as of v0.2.0 the library is built with `no_std`.
+
 See documentation for full driver details.
 
 ## Building the [quickstart](./examples/quickstart.rs):
