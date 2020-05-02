@@ -15,18 +15,18 @@
 //! #
 //! # use std::thread::sleep;
 //! # use std::time::Duration;
-//! # fn main() -> Result<(), Box<dyn Error>> {
+//! # fn main() {
 //! #    // create an instance of an SPI object
 //! #    // In this case, the buffer is on SPI0 and SS1.
 //! #    // The chip acts in Mode0.
-//! #    let some_hal_spi_object = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 14_000_000, Mode::Mode0)?;
+//! #    let some_hal_spi_object = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 14_000_000, Mode::Mode0).unwrap();
 //! #
 //!     // Construct a driver instance from the SPI interface, using default chip configurations.
-//!     let mut spi_driver = Ls7366::new(some_hal_spi_object)?;
+//!     let mut spi_driver = Ls7366::new(some_hal_spi_object).unwrap();
 //!
 //!     // Loop and read the counter.
 //!     loop {
-//!         let result = spi_driver.get_count()?;
+//!         let result = spi_driver.get_count().unwrap();
 //!         sleep(Duration::from_secs(1));
 //!         println!("read data:= {:?}", result);
 //!     }
@@ -50,7 +50,7 @@
 //! # use rppal::spi::Spi; // concrete SPI implementation
 //! # use std::error::Error;
 //! // --- snip ---
-//! # fn your_code(spi_driver: &mut Ls7366<Spi>) -> Result<(), Box<dyn Error>> {
+//! # fn your_code(spi_driver: &mut Ls7366<Spi>) {
 //!     let mdr0_configuration = Mdr0{
 //!         quad_count_mode: QuadCountMode::Quad2x,
 //!         filter_clock : FilterClockDivisionFactor::Two,
@@ -68,10 +68,9 @@
 //!         # flag_on_cy: false,
 //!     };
 //!
-//!     spi_driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()])?;
-//!     spi_driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()])?;
+//!     spi_driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()]).unwrap();
+//!     spi_driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()]).unwrap();
 //!     // --- Snip ---
-//!     # Ok(())
 //! }
 //! ```
 //!
@@ -225,7 +224,7 @@ impl<SPI, SpiError> Ls7366<SPI>
     pub fn get_status(&mut self) -> Result<Str, Error<SpiError>> {
         let result: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
         let raw_result = self.read_register(result, ir::Target::Str)?;
-        let result = Str::decode(raw_result[4]);
+        let result = Str::decode(raw_result[3]);
         match result {
             Ok(data) => Ok(data),
             Err(error) => Err(Error::EncodeError(error)),
@@ -248,7 +247,7 @@ impl<SPI, SpiError> Ls7366<SPI>
         let raw_result: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
         let raw_result = self.read_register(raw_result,ir::Target::Cntr)?;
         let status = self.get_status()?;
-        let count = utilities::vec_to_i64(&raw_result[1..]);
+        let count = utilities::vec_to_i64(&raw_result);
         match status.sign_bit {
             str_register::SignBit::Negative => Ok(count * -1),
             str_register::SignBit::Positive => Ok(count),

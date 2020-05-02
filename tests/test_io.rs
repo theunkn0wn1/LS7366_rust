@@ -10,7 +10,7 @@ mod tests {
     use ls7366::str_register;
 
     #[test]
-    fn test_get_count() -> Result<(), Box<dyn Error>> {
+    fn test_get_count() {
         let expectations = [
             SpiTransaction::transfer(vec![InstructionRegister {
                 target: Target::Cntr,
@@ -37,15 +37,14 @@ mod tests {
         let spi = Mock::new(&expectations);
         let mut driver = Ls7366::new_uninit(spi);
 
-        let result = driver.get_count()?;
+        let result = driver.get_count().unwrap();
 
         assert_eq!(result, 0xDEADBEEF);
-        assert_eq!(driver.get_count()?, -0xDEADBEEF);
-        Ok(())
+        assert_eq!(driver.get_count().unwrap(), -0xDEADBEEF);
     }
 
     #[test]
-    fn test_status() -> Result<(), Box<dyn Error>> {
+    fn test_status() {
         let expectations = [
             // STR read, will return positive sign
             SpiTransaction::transfer(vec![InstructionRegister {
@@ -86,15 +85,13 @@ mod tests {
         let mut driver = Ls7366::new_uninit(spi);
 
         for payload in expected_results.iter() {
-            let result = driver.get_status()?;
+            let result = driver.get_status().unwrap();
             assert_eq!(&result, payload);
         }
-
-        Ok(())
     }
 
     #[test]
-    fn test_write_register() -> Result<(), Box<dyn Error>> {
+    fn test_write_register() {
         let expectations = [
             // Dtr write
             SpiTransaction::write(vec![InstructionRegister {
@@ -114,8 +111,7 @@ mod tests {
         let spi = Mock::new(&expectations);
         let mut driver = Ls7366::new_uninit(spi);
 
-        driver.write_register(Target::Dtr, &vec![0xBA, 0xAD, 0xBE, 0xEF])?;
-        driver.write_register(Target::Mdr0, &vec![0xFD, 0xFD, 0xFD, 0xFD])?;
-        Ok(())
+        driver.write_register(Target::Dtr, &vec![0xBA, 0xAD, 0xBE, 0xEF]).unwrap();
+        driver.write_register(Target::Mdr0, &vec![0xFD, 0xFD, 0xFD, 0xFD]).unwrap();
     }
 }
