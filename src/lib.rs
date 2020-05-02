@@ -73,8 +73,8 @@
 //!         # flag_on_cy: false,
 //!     };
 //!
-//!     driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()]).unwrap();
-//!     driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()]).unwrap();
+//!     driver.write_register(Target::Mdr0, &[mdr0_configuration.encode()]).unwrap();
+//!     driver.write_register(Target::Mdr1, &[mdr1_configuration.encode()]).unwrap();
 //!
 //! ```
 //!
