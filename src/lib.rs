@@ -79,6 +79,7 @@
 //! [`Mdr0`]: ./mdr0/struct.Mdr0.html
 //! [`Mdr1`]: ./mdr1/struct.Mdr1.html
 //! [`Ls7366::new`]: ./struct.Ls7366.html#method.new
+#![no_std]
 
 use embedded_hal::blocking::spi::{Transfer, Write};
 
@@ -107,10 +108,9 @@ pub enum Error<SpiError> {
     PayloadTooBig,
 }
 
-impl<E: std::fmt::Debug> std::error::Error for Error<E> {}
 
-impl<E: std::fmt::Debug> std::fmt::Display for Error<E> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<E: core::fmt::Debug> core::fmt::Display for Error<E> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
@@ -159,18 +159,18 @@ impl<SPI, SpiError> Ls7366<SPI>
         };
 
         // Write primary configuration to chip.
-        driver.write_register(ir::Target::Mdr0, &vec![mdr0_payload.encode()])?;
+        driver.write_register(ir::Target::Mdr0, &[mdr0_payload.encode()])?;
         // Write secondary configuration to chip.
-        driver.write_register(ir::Target::Mdr1, &vec![mdr1_payload.encode()])?;
+        driver.write_register(ir::Target::Mdr1, &[mdr1_payload.encode()])?;
         // Zero Dtr to prepare a write into Cntr.
-        driver.write_register(ir::Target::Dtr, &vec![0x00, 0x00, 0x00, 0x00])?;
+        driver.write_register(ir::Target::Dtr, &[0x00, 0x00, 0x00, 0x00])?;
         // Load Dtr into Cntr.
         driver.act(
             ir::InstructionRegister {
                 target: ir::Target::Cntr,
                 action: ir::Action::Load,
             },
-            vec![],
+            &[],
         )?;
         // clear status register.
         driver.clear_status()?;
@@ -184,7 +184,7 @@ impl<SPI, SpiError> Ls7366<SPI>
         }
     }
     /// Writes bytes into the specified register. attempting to write more than 4 bytes is an error.
-    pub fn write_register(&mut self, target: ir::Target, data: &Vec<u8>) -> Result<(), Error<SpiError>> {
+    pub fn write_register(&mut self, target: ir::Target, data: &[u8]) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
             action: ir::Action::Write,
@@ -192,9 +192,8 @@ impl<SPI, SpiError> Ls7366<SPI>
         if data.len() > 4 {
             return Err(Error::PayloadTooBig);
         }
-        let mut payload: Vec<u8> = vec![ir_cmd.encode()];
-        payload.extend(data.iter());
-
+        let payload: &[u8] = &[ir_cmd.encode()];
+        let mut payload = [payload, data].concat();
         self.interface.write(&payload)?;
         Ok(())
     }
@@ -212,15 +211,15 @@ impl<SPI, SpiError> Ls7366<SPI>
     /// [`Dtr`]:  ir/enum.Target.html#variant.Dtr
     /// [`Cntr`]: ir/enum.Target.html#variant.Cntr
     /// [`Otr`]:  ir/enum.Target.html#variant.Otr
-    pub fn read_register(&mut self, target: ir::Target) -> Result<Vec<u8>, Error<SpiError>> {
+    pub fn read_register(&mut self, target: ir::Target) -> Result<&[u8], Error<SpiError>> {
         let ir = ir::InstructionRegister {
             target,
             action: Action::Read,
         };
-        let mut tx_buffer: Vec<u8> = vec![ir.encode(), 0x00, 0x00, 0x00, 0x00];
+        let mut tx_buffer= &mut [ir.encode(), 0x00, 0x00, 0x00, 0x00];
 
-        let result = self.interface.transfer(&mut tx_buffer)?;
-        Ok(Vec::from(result))
+        let result = self.interface.transfer( tx_buffer)?;
+        Ok(result)
     }
     pub fn get_status(&mut self) -> Result<Str, Error<SpiError>> {
         let raw_result = self.read_register(ir::Target::Str)?;
@@ -238,7 +237,7 @@ impl<SPI, SpiError> Ls7366<SPI>
             ir::InstructionRegister {
                 target: Target::Str,
                 action: Action::Clear,
-            }, vec![],
+            }, &[],
         )?;
         Ok(())
     }
@@ -261,28 +260,28 @@ impl<SPI, SpiError> Ls7366<SPI>
     ///
     /// Other sources of error responses may arise from the underlying HAL implementation and are
     /// bubbled up.
-    pub fn act(&mut self, command: InstructionRegister, data: Vec<u8>) -> Result<Vec<u8>, Error<SpiError>> {
-        let mut tx_buffer: Vec<u8> = vec![command.encode()];
+    pub fn act(&mut self, command: InstructionRegister, data: &[u8]) -> Result<&[u8], Error<SpiError>> {
+        let mut tx_buffer: &[u8] = &[command.encode()];
         match command.action {
             Action::Clear | Action::Load => {
                 if data.len() > 0 {
                     Err(Error::PayloadTooBig)
                 } else {
                     self.interface.write(&tx_buffer)?;
-                    Ok(vec![])
+                    Ok(&[])
                 }
             }
             Action::Read => {
-                tx_buffer.resize(5, 0x00);
+                let mut tx_buffer = [tx_buffer[0], 0x00, 0x00, 0x00, 0x00];
                 let result = self.interface.transfer(&mut tx_buffer)?;
-                Ok(Vec::from(result))
+                Ok(result)
             }
             Action::Write => {
                 if data.len() > 4 {
                     Err(Error::PayloadTooBig)
                 } else {
                     self.interface.write(&tx_buffer)?;
-                    Ok(vec![])
+                    Ok(&[])
                 }
             }
         }

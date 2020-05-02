@@ -115,7 +115,7 @@ impl Decodable for QuadCountMode {
             0b01 => Ok(QuadCountMode::Quad1x),
             0b10 => Ok(QuadCountMode::Quad2x),
             0b11 => Ok(QuadCountMode::Quad4x),
-            _ => Err(EncoderError::FailedDecode("failed to parse QuadCountMode".to_string())),
+            _ => Err(EncoderError::FailedDecode),
         }
     }
 }
@@ -138,7 +138,7 @@ impl Decodable for IndexMode {
             0b01 => Ok(IndexMode::LoadCntr),
             0b10 => Ok(IndexMode::ClearCntr),
             0b11 => Ok(IndexMode::LoadOtr),
-            _ => Err(EncoderError::FailedDecode("failed to parse IndexMode".to_string())),
+            _ => Err(EncoderError::FailedDecode),
         }
     }
 }
@@ -161,7 +161,7 @@ impl Decodable for CycleCountMode {
             0b01 => Ok(CycleCountMode::SingleCycle),
             0b10 => Ok(CycleCountMode::RangeLimit),
             0b11 => Ok(CycleCountMode::ModuloN),
-            _ => Err(EncoderError::FailedDecode("failed to parse CycleCount".to_string())),
+            _ => Err(EncoderError::FailedDecode),
         }
     }
 }

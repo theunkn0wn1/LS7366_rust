@@ -1,15 +1,12 @@
-use std::error::Error;
 use bitfield::fmt::Formatter;
 
 #[derive(Clone, Debug)]
 pub enum EncoderError {
-    FailedDecode(String),
+    FailedDecode,
 }
-impl Error for EncoderError {
 
-}
-impl std::fmt::Display for EncoderError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for EncoderError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }

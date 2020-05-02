@@ -69,7 +69,7 @@ impl Decodable for CounterMode {
             0b01 => Ok(CounterMode::Byte3),
             0b10 => Ok(CounterMode::Byte2),
             0b11 => Ok(CounterMode::Byte1),
-            _ => Err(EncoderError::FailedDecode("failed to decode CounterMode".to_string()))
+            _ => Err(EncoderError::FailedDecode)
         }
     }
 }
