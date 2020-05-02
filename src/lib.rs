@@ -266,7 +266,7 @@ impl<SPI, SpiError> Ls7366<SPI>
         let tx_buffer: &[u8] = &[command.encode()];
         match command.action {
             Action::Clear | Action::Load => {
-                if data.len() > 0 {
+                if data.len() > 1 {
                     Err(Error::PayloadTooBig)
                 } else {
                     self.interface.write(&tx_buffer)?;
@@ -280,7 +280,7 @@ impl<SPI, SpiError> Ls7366<SPI>
                 Ok(data)
             }
             Action::Write => {
-                if data.len() > 4 {
+                if data.len() > 5 {
                     Err(Error::PayloadTooBig)
                 } else {
                     self.interface.write(&tx_buffer)?;
