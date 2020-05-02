@@ -3,6 +3,8 @@
 //! This driver should work with any SPI interface as long as it implements
 //! the blocking `embedded_hal` [`SPI traits`].
 //!
+//! The library is built with `no_std`.
+//!
 //!
 //! # Examples
 //! Bare-minimum boilerplate to read from the buffer:
@@ -15,18 +17,18 @@
 //! #
 //! # use std::thread::sleep;
 //! # use std::time::Duration;
-//! # fn main() -> Result<(), Box<dyn Error>> {
+//! # fn main() {
 //! #    // create an instance of an SPI object
 //! #    // In this case, the buffer is on SPI0 and SS1.
 //! #    // The chip acts in Mode0.
-//! #    let some_hal_spi_object = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 14_000_000, Mode::Mode0)?;
+//! #    let some_hal_spi_object = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 14_000_000, Mode::Mode0).unwrap();
 //! #
 //!     // Construct a driver instance from the SPI interface, using default chip configurations.
-//!     let mut spi_driver = Ls7366::new(some_hal_spi_object)?;
+//!     let mut spi_driver = Ls7366::new(some_hal_spi_object).unwrap();
 //!
 //!     // Loop and read the counter.
 //!     loop {
-//!         let result = spi_driver.get_count()?;
+//!         let result = spi_driver.get_count().unwrap();
 //!         sleep(Duration::from_secs(1));
 //!         println!("read data:= {:?}", result);
 //!     }
@@ -43,14 +45,19 @@
 //!
 //! 1. Build an instance of [`Mdr0`] and [`Mdr1`] with the desired configuration.
 //! 2. Write these instances into the relevant registers.
-//! ```no_run
+//! ```
 //! use ls7366::mdr0::{QuadCountMode, CycleCountMode, FilterClockDivisionFactor,IndexMode, Mdr0};
 //! use ls7366::mdr1::{CounterMode, Mdr1};
 //! use ls7366::{Ls7366, Target, Encodable};
-//! # use rppal::spi::Spi; // concrete SPI implementation
-//! # use std::error::Error;
+//! use embedded_hal_mock::spi::Mock;
+//! use embedded_hal_mock::spi::Transaction as SpiTransaction;
+//! # let expectations = [
+//! #     SpiTransaction::write(vec![0b10001000, 0b10100110]),
+//! #     SpiTransaction::write(vec![0b10010000, 0b00000101])
+//! # ];
+//! # let spi = Mock::new(&expectations);
+//! # let mut driver = Ls7366::new_uninit(spi);
 //! // --- snip ---
-//! # fn your_code(spi_driver: &mut Ls7366<Spi>) -> Result<(), Box<dyn Error>> {
 //!     let mdr0_configuration = Mdr0{
 //!         quad_count_mode: QuadCountMode::Quad2x,
 //!         filter_clock : FilterClockDivisionFactor::Two,
@@ -68,17 +75,16 @@
 //!         # flag_on_cy: false,
 //!     };
 //!
-//!     spi_driver.write_register(Target::Mdr0, &vec![mdr0_configuration.encode()])?;
-//!     spi_driver.write_register(Target::Mdr1, &vec![mdr1_configuration.encode()])?;
-//!     // --- Snip ---
-//!     # Ok(())
-//! }
+//!     driver.write_register(Target::Mdr0, &[mdr0_configuration.encode()]).unwrap();
+//!     driver.write_register(Target::Mdr1, &[mdr1_configuration.encode()]).unwrap();
+//!
 //! ```
 //!
 //! [`SPI traits`]: https://docs.rs/embedded-hal/0.2.3/embedded_hal/blocking/spi/index.html
 //! [`Mdr0`]: ./mdr0/struct.Mdr0.html
 //! [`Mdr1`]: ./mdr1/struct.Mdr1.html
 //! [`Ls7366::new`]: ./struct.Ls7366.html#method.new
+#![cfg_attr(not(test), no_std)]
 
 use embedded_hal::blocking::spi::{Transfer, Write};
 
@@ -107,10 +113,9 @@ pub enum Error<SpiError> {
     PayloadTooBig,
 }
 
-impl<E: std::fmt::Debug> std::error::Error for Error<E> {}
 
-impl<E: std::fmt::Debug> std::fmt::Display for Error<E> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<E: core::fmt::Debug> core::fmt::Display for Error<E> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
@@ -159,18 +164,18 @@ impl<SPI, SpiError> Ls7366<SPI>
         };
 
         // Write primary configuration to chip.
-        driver.write_register(ir::Target::Mdr0, &vec![mdr0_payload.encode()])?;
+        driver.write_register(ir::Target::Mdr0, &[mdr0_payload.encode()])?;
         // Write secondary configuration to chip.
-        driver.write_register(ir::Target::Mdr1, &vec![mdr1_payload.encode()])?;
+        driver.write_register(ir::Target::Mdr1, &[mdr1_payload.encode()])?;
         // Zero Dtr to prepare a write into Cntr.
-        driver.write_register(ir::Target::Dtr, &vec![0x00, 0x00, 0x00, 0x00])?;
+        driver.write_register(ir::Target::Dtr, &[0x00, 0x00, 0x00, 0x00])?;
         // Load Dtr into Cntr.
         driver.act(
             ir::InstructionRegister {
                 target: ir::Target::Cntr,
                 action: ir::Action::Load,
             },
-            vec![],
+            &mut [0x00],
         )?;
         // clear status register.
         driver.clear_status()?;
@@ -184,7 +189,7 @@ impl<SPI, SpiError> Ls7366<SPI>
         }
     }
     /// Writes bytes into the specified register. attempting to write more than 4 bytes is an error.
-    pub fn write_register(&mut self, target: ir::Target, data: &Vec<u8>) -> Result<(), Error<SpiError>> {
+    pub fn write_register(&mut self, target: ir::Target, data: &[u8]) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
             action: ir::Action::Write,
@@ -192,9 +197,8 @@ impl<SPI, SpiError> Ls7366<SPI>
         if data.len() > 4 {
             return Err(Error::PayloadTooBig);
         }
-        let mut payload: Vec<u8> = vec![ir_cmd.encode()];
-        payload.extend(data.iter());
-
+        let payload: &[u8] = &[ir_cmd.encode()];
+        let payload = [payload, data].concat();
         self.interface.write(&payload)?;
         Ok(())
     }
@@ -212,19 +216,21 @@ impl<SPI, SpiError> Ls7366<SPI>
     /// [`Dtr`]:  ir/enum.Target.html#variant.Dtr
     /// [`Cntr`]: ir/enum.Target.html#variant.Cntr
     /// [`Otr`]:  ir/enum.Target.html#variant.Otr
-    pub fn read_register(&mut self, target: ir::Target) -> Result<Vec<u8>, Error<SpiError>> {
+    pub fn read_register<'a>(&mut self, rx_buffer: &'a mut [u8], target: ir::Target) -> Result<&'a [u8], Error<SpiError>> {
         let ir = ir::InstructionRegister {
             target,
             action: Action::Read,
         };
-        let mut tx_buffer: Vec<u8> = vec![ir.encode(), 0x00, 0x00, 0x00, 0x00];
+        let tx_buffer = &mut [ir.encode(), 0x00, 0x00, 0x00, 0x00];
 
-        let result = self.interface.transfer(&mut tx_buffer)?;
-        Ok(Vec::from(result))
+        let result = self.interface.transfer(tx_buffer)?;
+        rx_buffer.copy_from_slice(&result[1..]);
+        Ok(rx_buffer)
     }
     pub fn get_status(&mut self) -> Result<Str, Error<SpiError>> {
-        let raw_result = self.read_register(ir::Target::Str)?;
-        let result = Str::decode(raw_result[4]);
+        let result: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
+        let raw_result = self.read_register(result, ir::Target::Str)?;
+        let result = Str::decode(raw_result[3]);
         match result {
             Ok(data) => Ok(data),
             Err(error) => Err(Error::EncodeError(error)),
@@ -238,15 +244,16 @@ impl<SPI, SpiError> Ls7366<SPI>
             ir::InstructionRegister {
                 target: Target::Str,
                 action: Action::Clear,
-            }, vec![],
+            }, &mut [0x00],
         )?;
         Ok(())
     }
     /// Reads the chip's current count, sets the sign bit appropriate to the status register
     pub fn get_count(&mut self) -> Result<i64, Error<SpiError>> {
-        let raw_result = self.read_register(ir::Target::Cntr)?;
+        let raw_result: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
+        let raw_result = self.read_register(raw_result,ir::Target::Cntr)?;
         let status = self.get_status()?;
-        let count = utilities::vec_to_i64(&raw_result[1..]);
+        let count = utilities::vec_to_i64(&raw_result);
         match status.sign_bit {
             str_register::SignBit::Negative => Ok(count * -1),
             str_register::SignBit::Positive => Ok(count),
@@ -261,28 +268,29 @@ impl<SPI, SpiError> Ls7366<SPI>
     ///
     /// Other sources of error responses may arise from the underlying HAL implementation and are
     /// bubbled up.
-    pub fn act(&mut self, command: InstructionRegister, data: Vec<u8>) -> Result<Vec<u8>, Error<SpiError>> {
-        let mut tx_buffer: Vec<u8> = vec![command.encode()];
+    pub fn act<'a>(&mut self, command: InstructionRegister, data: &'a mut [u8]) -> Result<& 'a [u8], Error<SpiError>> {
+        let tx_buffer: &[u8] = &[command.encode()];
         match command.action {
             Action::Clear | Action::Load => {
-                if data.len() > 0 {
+                if data.len() > 1 {
                     Err(Error::PayloadTooBig)
                 } else {
                     self.interface.write(&tx_buffer)?;
-                    Ok(vec![])
+                    Ok(data)
                 }
             }
             Action::Read => {
-                tx_buffer.resize(5, 0x00);
+                let mut tx_buffer = [tx_buffer[0], 0x00, 0x00, 0x00, 0x00];
                 let result = self.interface.transfer(&mut tx_buffer)?;
-                Ok(Vec::from(result))
+                data.copy_from_slice(result);
+                Ok(data)
             }
             Action::Write => {
-                if data.len() > 4 {
+                if data.len() > 5 {
                     Err(Error::PayloadTooBig)
                 } else {
                     self.interface.write(&tx_buffer)?;
-                    Ok(vec![])
+                    Ok(data)
                 }
             }
         }

@@ -81,10 +81,10 @@ impl Decodable for Str {
         Ok(Self {
             sign_bit: SignBit::decode(payload.sign())?,
             count_direction: Direction::decode(payload.count_direction())?,
-            compare: payload.power_loss(),
+            compare: payload.compare(),
             cary: payload.cary(),
             borrow: payload.borrow_(),
-            power_loss: payload.compare(),
+            power_loss: payload.power_loss(),
             index: payload.index(),
             count_enabled: payload.count_enabled(),
         })
