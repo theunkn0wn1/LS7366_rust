@@ -192,7 +192,7 @@ impl<SPI, SpiError> Ls7366<SPI>
             return Err(Error::PayloadTooBig);
         }
         let payload: &[u8] = &[ir_cmd.encode()];
-        let mut payload = [payload, data].concat();
+        let payload = [payload, data].concat();
         self.interface.write(&payload)?;
         Ok(())
     }
@@ -215,7 +215,7 @@ impl<SPI, SpiError> Ls7366<SPI>
             target,
             action: Action::Read,
         };
-        let mut tx_buffer = &mut [ir.encode(), 0x00, 0x00, 0x00, 0x00];
+        let tx_buffer = &mut [ir.encode(), 0x00, 0x00, 0x00, 0x00];
 
         let result = self.interface.transfer(tx_buffer)?;
         rx_buffer.copy_from_slice(&result[1..]);
@@ -263,7 +263,7 @@ impl<SPI, SpiError> Ls7366<SPI>
     /// Other sources of error responses may arise from the underlying HAL implementation and are
     /// bubbled up.
     pub fn act<'a>(&mut self, command: InstructionRegister, data: &'a mut [u8]) -> Result<& 'a [u8], Error<SpiError>> {
-        let mut tx_buffer: &[u8] = &[command.encode()];
+        let tx_buffer: &[u8] = &[command.encode()];
         match command.action {
             Action::Clear | Action::Load => {
                 if data.len() > 0 {

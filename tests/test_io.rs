@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
+    
 
     use embedded_hal_mock::spi::{Mock, Transaction as SpiTransaction};
 
