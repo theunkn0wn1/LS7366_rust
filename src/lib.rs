@@ -197,9 +197,17 @@ impl<SPI, SpiError> Ls7366<SPI>
         if data.len() > 4 {
             return Err(Error::PayloadTooBig);
         }
-        let payload: &[u8] = &[ir_cmd.encode()];
-        let payload = [payload, data].concat();
-        self.interface.write(&payload)?;
+
+        let encoded = ir_cmd.encode();
+        let payload: &mut [u8] = &mut [encoded, encoded, encoded, encoded, encoded];
+
+        let mut i = 1;
+        for datum in data {
+            payload[i] = *datum;
+            i+=1;
+        }
+        // only write as many bits as we had data, +1 for the IR.
+        self.interface.write(&payload[0.. data.len()+1])?;
         Ok(())
     }
     /// Executes a read operation against specified register, returning up to 4 bytes from the chip.
