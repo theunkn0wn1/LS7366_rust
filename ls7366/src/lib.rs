@@ -98,7 +98,7 @@ pub mod mdr0;
 pub mod ir;
 pub mod mdr1;
 pub mod str_register;
-mod traits;
+pub mod traits;
 mod errors;
 mod utilities;
 mod test_instruction_register;
