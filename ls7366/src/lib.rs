@@ -88,20 +88,20 @@
 
 use embedded_hal::blocking::spi::{Transfer, Write};
 
-pub use crate::ir::{Action, Target};
 use crate::ir::InstructionRegister;
+pub use crate::ir::{Action, Target};
 use crate::str_register::Str;
 use crate::traits::Decodable;
 pub use crate::traits::Encodable;
 
-pub mod mdr0;
+mod errors;
 pub mod ir;
+pub mod mdr0;
 pub mod mdr1;
 pub mod str_register;
-pub mod traits;
-mod errors;
-mod utilities;
 mod test_instruction_register;
+pub mod traits;
+mod utilities;
 
 #[derive(Clone, Debug)]
 pub enum Error<SpiError> {
@@ -112,7 +112,6 @@ pub enum Error<SpiError> {
     // Request to write payload larger than target register.
     PayloadTooBig,
 }
-
 
 impl<E: core::fmt::Debug> core::fmt::Display for Error<E> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -133,7 +132,9 @@ pub struct Ls7366<SPI> {
 }
 
 impl<SPI, SpiError> Ls7366<SPI>
-    where SPI: Transfer<u8, Error=SpiError> + Write<u8, Error=SpiError> {
+where
+    SPI: Transfer<u8, Error = SpiError> + Write<u8, Error = SpiError>,
+{
     /// Creates a new driver and initializes the Chip to some sensible default values.
     /// This will zero the chip's counter, configure it to 4 byte count mode (full range)
     /// and to treat every 4th quadrature pulse as a increment.
@@ -143,9 +144,7 @@ impl<SPI, SpiError> Ls7366<SPI>
     ///
     /// [`uninit`]: #method.new_uninit
     pub fn new(iface: SPI) -> Result<Self, Error<SpiError>> {
-        let mut driver = Ls7366 {
-            interface: iface
-        };
+        let mut driver = Ls7366 { interface: iface };
         // Creating configurations for the two MDR configuration registers
         let mdr0_payload = mdr0::Mdr0 {
             quad_count_mode: mdr0::QuadCountMode::Quad4x,
@@ -184,12 +183,14 @@ impl<SPI, SpiError> Ls7366<SPI>
 
     /// Creates a new driver but does NOT do any initialization actions against the chip.
     pub fn new_uninit(iface: SPI) -> Self {
-        Ls7366 {
-            interface: iface
-        }
+        Ls7366 { interface: iface }
     }
     /// Writes bytes into the specified register. attempting to write more than 4 bytes is an error.
-    pub fn write_register(&mut self, target: ir::Target, data: &[u8]) -> Result<(), Error<SpiError>> {
+    pub fn write_register(
+        &mut self,
+        target: ir::Target,
+        data: &[u8],
+    ) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
             action: ir::Action::Write,
@@ -204,10 +205,10 @@ impl<SPI, SpiError> Ls7366<SPI>
         let mut i = 1;
         for datum in data {
             payload[i] = *datum;
-            i+=1;
+            i += 1;
         }
         // only write as many bits as we had data, +1 for the IR.
-        self.interface.write(&payload[0.. data.len()+1])?;
+        self.interface.write(&payload[0..data.len() + 1])?;
         Ok(())
     }
     /// Executes a read operation against specified register, returning up to 4 bytes from the chip.
@@ -224,7 +225,11 @@ impl<SPI, SpiError> Ls7366<SPI>
     /// [`Dtr`]:  ir/enum.Target.html#variant.Dtr
     /// [`Cntr`]: ir/enum.Target.html#variant.Cntr
     /// [`Otr`]:  ir/enum.Target.html#variant.Otr
-    pub fn read_register<'a>(&mut self, rx_buffer: &'a mut [u8], target: ir::Target) -> Result<&'a [u8], Error<SpiError>> {
+    pub fn read_register<'a>(
+        &mut self,
+        rx_buffer: &'a mut [u8],
+        target: ir::Target,
+    ) -> Result<&'a [u8], Error<SpiError>> {
         let ir = ir::InstructionRegister {
             target,
             action: Action::Read,
@@ -252,14 +257,15 @@ impl<SPI, SpiError> Ls7366<SPI>
             ir::InstructionRegister {
                 target: Target::Str,
                 action: Action::Clear,
-            }, &mut [0x00],
+            },
+            &mut [0x00],
         )?;
         Ok(())
     }
     /// Reads the chip's current count, sets the sign bit appropriate to the status register
     pub fn get_count(&mut self) -> Result<i64, Error<SpiError>> {
         let raw_result: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
-        let raw_result = self.read_register(raw_result,ir::Target::Cntr)?;
+        let raw_result = self.read_register(raw_result, ir::Target::Cntr)?;
         let status = self.get_status()?;
         let count = utilities::vec_to_i64(&raw_result);
         match status.sign_bit {
@@ -268,7 +274,6 @@ impl<SPI, SpiError> Ls7366<SPI>
         }
     }
 
-
     /// Performs a transaction against the chip.
     ///
     /// Some actions (e.g. writing to a register) accept up to 4 u8 bytes, this function accepts
@@ -276,7 +281,11 @@ impl<SPI, SpiError> Ls7366<SPI>
     ///
     /// Other sources of error responses may arise from the underlying HAL implementation and are
     /// bubbled up.
-    pub fn act<'a>(&mut self, command: InstructionRegister, data: &'a mut [u8]) -> Result<& 'a [u8], Error<SpiError>> {
+    pub fn act<'a>(
+        &mut self,
+        command: InstructionRegister,
+        data: &'a mut [u8],
+    ) -> Result<&'a [u8], Error<SpiError>> {
         let tx_buffer: &[u8] = &[command.encode()];
         match command.action {
             Action::Clear | Action::Load => {

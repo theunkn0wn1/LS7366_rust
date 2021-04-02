@@ -2,19 +2,20 @@
 
 use embassy_traits::spi::FullDuplex;
 
-use ls7366::{ir, mdr0, mdr1, Encodable};
-use ls7366::Error;
 use ls7366::traits::Decodable;
+use ls7366::Error;
+use ls7366::{ir, mdr0, mdr1, Encodable};
 
 use core::pin::Pin;
 
-
-struct Ls7366<SPI> {
-    iface: SPI
+pub struct Ls7366<SPI> {
+    iface: SPI,
 }
 
 impl<SPI, SpiError> Ls7366<SPI>
-    where SPI: FullDuplex<u8, Error=SpiError> {
+where
+    SPI: FullDuplex<u8, Error = SpiError>,
+{
     pub fn new_uninit(iface: SPI) -> Self {
         Self { iface }
     }
@@ -37,16 +38,23 @@ impl<SPI, SpiError> Ls7366<SPI>
             flag_on_cy: false,
         };
 
-        self.as_mut().write_register(ir::Target::Mdr0, &[mdr0_payload.encode()]).await?;
-        self.as_mut().write_register(ir::Target::Mdr1, &[mdr1_payload.encode()]).await?;
+        self.as_mut()
+            .write_register(ir::Target::Mdr0, &[mdr0_payload.encode()])
+            .await?;
+        self.as_mut()
+            .write_register(ir::Target::Mdr1, &[mdr1_payload.encode()])
+            .await?;
         Ok(())
     }
-
 
     /// Writes data to specified register
     ///
     /// NOTE(safety) safe as Self is pinned.
-    async fn write_register<'a>(self: Pin<&'a mut Self>, target: ir::Target, data: &'a [u8]) -> Result<(), Error<SpiError>> {
+    async fn write_register<'a>(
+        self: Pin<&'a mut Self>,
+        target: ir::Target,
+        data: &'a [u8],
+    ) -> Result<(), Error<SpiError>> {
         let ir_cmd = ir::InstructionRegister {
             target,
             action: ir::Action::Write,
@@ -67,27 +75,33 @@ impl<SPI, SpiError> Ls7366<SPI>
         }
 
         let result: Result<(), SpiError> = unsafe {
-            Pin::new_unchecked(&mut self.get_unchecked_mut().iface).write(data).await
+            Pin::new_unchecked(&mut self.get_unchecked_mut().iface)
+                .write(data)
+                .await
         };
         // any error we get us an underlying error, therefore we map it to that type.
         result.map_err(|e| Error::SpiError(e))
     }
 
     /// Executes a read operation against specified register, returning up to 4 bytes from the chip.
-///
-/// ## Note:
-///
-/// Reading from [`Str`] clears the register to zero.
-///
-/// Reading from [`Dtr`] is a Noop.
-///
-/// Reading from [`Cntr`] overwrites [`Otr`].
-///
-/// [`Str`]:  ir/enum.Target.html#variant.Str
-/// [`Dtr`]:  ir/enum.Target.html#variant.Dtr
-/// [`Cntr`]: ir/enum.Target.html#variant.Cntr
-/// [`Otr`]:  ir/enum.Target.html#variant.Otr
-    pub async fn read_register<'a>(self: Pin<&'a mut Self>, rx_buffer: &'a mut [u8], target: ir::Target) -> Result<&'a [u8], Error<SpiError>> {
+    ///
+    /// ## Note:
+    ///
+    /// Reading from [`Str`] clears the register to zero.
+    ///
+    /// Reading from [`Dtr`] is a Noop.
+    ///
+    /// Reading from [`Cntr`] overwrites [`Otr`].
+    ///
+    /// [`Str`]:  ir/enum.Target.html#variant.Str
+    /// [`Dtr`]:  ir/enum.Target.html#variant.Dtr
+    /// [`Cntr`]: ir/enum.Target.html#variant.Cntr
+    /// [`Otr`]:  ir/enum.Target.html#variant.Otr
+    pub async fn read_register<'a>(
+        self: Pin<&'a mut Self>,
+        rx_buffer: &'a mut [u8],
+        target: ir::Target,
+    ) -> Result<&'a [u8], Error<SpiError>> {
         let ir = ir::InstructionRegister {
             target,
             action: ls7366::Action::Read,
@@ -97,13 +111,17 @@ impl<SPI, SpiError> Ls7366<SPI>
         // do transfer operaton.
         // this will modify the RX buffer and return nothing but a possible error.
         unsafe {
-            Pin::new_unchecked(&mut self.get_unchecked_mut().iface).read_write(tx_buffer, rx_buffer).await?
+            Pin::new_unchecked(&mut self.get_unchecked_mut().iface)
+                .read_write(tx_buffer, rx_buffer)
+                .await?
         };
         // If we got this far, then transfer succeeded.
         Ok(rx_buffer)
     }
 
-    pub async fn get_status(self: Pin<&mut Self>) -> Result<ls7366::str_register::Str, Error<SpiError>> {
+    pub async fn get_status(
+        self: Pin<&mut Self>,
+    ) -> Result<ls7366::str_register::Str, Error<SpiError>> {
         let result: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
         let raw_result = self.read_register(result, ir::Target::Str).await?;
         ls7366::str_register::Str::decode(raw_result[3]).map_err(|e| Error::EncodeError(e))

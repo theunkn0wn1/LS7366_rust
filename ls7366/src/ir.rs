@@ -28,7 +28,6 @@ pub enum Target {
     /// contents may be transfered to [`Cntr`] under program control or hardware index signal.
     ///
     /// [`Cntr`]:  #variant.Cntr
-
     Dtr,
     /// Counter register, indirectly accessible via [`Dtr`] and [`Otr`].
     ///
@@ -94,7 +93,7 @@ impl Decodable for Target {
             0b101 => Ok(Target::Otr),
             0b110 => Ok(Target::Str),
             0b111 => Ok(Target::None),
-            _ => { Err(EncoderError::FailedDecode) }
+            _ => Err(EncoderError::FailedDecode),
         }
     }
 }
@@ -117,7 +116,7 @@ impl Decodable for Action {
             0b01 => Ok(Action::Read),
             0b10 => Ok(Action::Write),
             0b11 => Ok(Action::Load),
-            _ => Err(EncoderError::FailedDecode)
+            _ => Err(EncoderError::FailedDecode),
         }
     }
 }

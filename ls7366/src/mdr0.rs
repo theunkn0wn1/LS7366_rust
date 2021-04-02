@@ -86,7 +86,6 @@ pub struct Mdr0 {
     pub filter_clock: FilterClockDivisionFactor,
 }
 
-
 bitfield! {
     struct Mdr0Payload(u8);
     impl Debug;
@@ -191,12 +190,10 @@ impl Encodable for Mdr0 {
         payload.set_quad_count_mode(quad_value);
         payload.set_cycle_count_mode(self.cycle_count_mode.encode());
         payload.set_index_mode(self.index_mode.encode());
-        payload.set_filter_clock_division_factor(
-            match self.filter_clock {
-                FilterClockDivisionFactor::One => { false }
-                FilterClockDivisionFactor::Two => { true }
-            }
-        );
+        payload.set_filter_clock_division_factor(match self.filter_clock {
+            FilterClockDivisionFactor::One => false,
+            FilterClockDivisionFactor::Two => true,
+        });
 
         payload.0
     }
@@ -210,7 +207,9 @@ impl Decodable for Mdr0 {
             cycle_count_mode: CycleCountMode::decode(payload.cycle_count_mode())?,
             index_mode: IndexMode::decode(payload.index_mode())?,
             is_index_inverted: payload.is_index_inverted(),
-            filter_clock: FilterClockDivisionFactor::decode(payload.filter_clock_division_factor())?,
+            filter_clock: FilterClockDivisionFactor::decode(
+                payload.filter_clock_division_factor(),
+            )?,
         })
     }
 }

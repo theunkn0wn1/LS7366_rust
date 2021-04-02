@@ -29,7 +29,6 @@ pub struct Mdr1 {
     /// programmed size of the counter([`Cntr`]) register.
     ///
     /// [`Cntr`]: ../ir/enum.Target.html#variant.Cntr
-
     pub counter_mode: CounterMode,
     /// Controls whether counting is enabled (false) or not (true)
     pub disable_counting: bool,
@@ -63,13 +62,12 @@ impl Encodable for CounterMode {
 
 impl Decodable for CounterMode {
     fn decode(raw: u8) -> Result<Self, EncoderError> {
-        match raw
-        {
+        match raw {
             0b00 => Ok(CounterMode::Byte4),
             0b01 => Ok(CounterMode::Byte3),
             0b10 => Ok(CounterMode::Byte2),
             0b11 => Ok(CounterMode::Byte1),
-            _ => Err(EncoderError::FailedDecode)
+            _ => Err(EncoderError::FailedDecode),
         }
     }
 }
