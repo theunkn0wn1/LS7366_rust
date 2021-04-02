@@ -12,11 +12,11 @@ mod tests {
         let result = InstructionRegister::decode(CLEAR_CNTR).expect("failed decode");
         match result.target {
             Target::Cntr => Ok(()),
-            _ => Err("incorrect target".to_string())
+            _ => Err("incorrect target".to_string()),
         }?;
         match result.action {
             Action::Clear => Ok(()),
-            _ => Err("incorrect action".to_string())
+            _ => Err("incorrect action".to_string()),
         }?;
         Ok(())
     }
@@ -26,11 +26,11 @@ mod tests {
         let result = InstructionRegister::decode(LOAD_DTR).expect("failed decode");
         match result.target {
             Target::Dtr => Ok(()),
-            _ => Err("incorrect target".to_string())
+            _ => Err("incorrect target".to_string()),
         }?;
         match result.action {
             Action::Load => Ok(()),
-            _ => Err("incorrect action".to_string())
+            _ => Err("incorrect action".to_string()),
         }?;
         Ok(())
     }
@@ -53,10 +53,10 @@ mod tests {
         assert_eq!(ir.encode(), CLEAR_CNTR);
     }
     #[test]
-    fn test_clear_str_encode(){
-        let ir = InstructionRegister{
+    fn test_clear_str_encode() {
+        let ir = InstructionRegister {
             target: Target::Str,
-            action: Action::Clear
+            action: Action::Clear,
         };
         assert_eq!(ir.encode(), CLEAR_STR)
     }
@@ -65,11 +65,11 @@ mod tests {
         let result = InstructionRegister::decode(CLEAR_STR).expect("failed decode");
         match result.target {
             Target::Str => Ok(()),
-            _ => Err("incorrect target".to_string())
+            _ => Err("incorrect target".to_string()),
         }?;
         match result.action {
             Action::Clear => Ok(()),
-            _ => Err("incorrect action".to_string())
+            _ => Err("incorrect action".to_string()),
         }?;
         Ok(())
     }

@@ -1,6 +1,6 @@
 /// Converts a vector of length 4 into a u32
 pub(crate) fn vec_to_i64(data: &[u8]) -> i64 {
-    if data.len()>4{
+    if data.len() > 4 {
         panic!("payload too big!, got {:?}", data)
     }
     let mut result: i64 = 0x00;
@@ -14,7 +14,7 @@ pub(crate) fn vec_to_i64(data: &[u8]) -> i64 {
     result
 }
 #[test]
-fn test_vec_to_u32(){
+fn test_vec_to_u32() {
     assert_eq!(vec_to_i64(&vec![0xDE, 0xAD, 0xBE, 0xEF]), 0xDEADBEEF);
     assert_eq!(vec_to_i64(&vec![0x00, 0x00, 0x00, 0x0]), 0x0000000)
 }

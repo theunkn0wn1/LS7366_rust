@@ -13,7 +13,7 @@ path = "../ls7366"
 
 [dependencies.embassy]
 git = "ssh://git@github.com/xoviat/embassy.git"
-branch  = "spi"
+branch = "spi"
 
 [dependencies.embassy-traits]
 version = "0.1.0"
@@ -32,3 +32,17 @@ branch = "spi"
 # TODO: support for other chips
 features = ["stm32f446"]
 
+[dev-dependencies]
+panic-probe = "0.2.0"
+cortex-m = "0.7.2"
+cortex-m-rt = "0.6.13"
+
+
+[dev-dependencies.rtt-target]
+version = "0.3.0"
+features = ["cortex-m"]
+
+[dependencies.stm32f4xx-hal]
+version = "0.8.3"
+features = ["rt", "stm32f446"] # replace the model of your microcontroller here
+git = "https://github.com/stm32-rs/stm32f4xx-hal.git"

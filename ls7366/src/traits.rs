@@ -10,6 +10,6 @@ pub trait Encodable {
 ///
 /// [`EncoderError`]: ../errors/enum.EncoderError.html
 
-pub trait Decodable: Sized{
-    fn decode(raw:u8) -> Result<Self, EncoderError>;
+pub trait Decodable: Sized {
+    fn decode(raw: u8) -> Result<Self, EncoderError>;
 }
