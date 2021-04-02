@@ -3,3 +3,5 @@ members = [
 	"ls7366",
 	"embassy-ls7366"
 ]
+resolver = "2"
+

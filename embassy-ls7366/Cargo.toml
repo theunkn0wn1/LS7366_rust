@@ -1,8 +1,11 @@
+
+
 [package]
 name = "embassy-ls7366"
 version = "0.1.0"
 authors = ["Joshua Salzedo <joshuasalzedo@gmail.com>"]
 edition = "2018"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -42,7 +45,13 @@ cortex-m-rt = "0.6.13"
 version = "0.3.0"
 features = ["cortex-m"]
 
-[dependencies.stm32f4xx-hal]
+[dev-dependencies.stm32f4xx-hal]
 version = "0.8.3"
 features = ["rt", "stm32f446"] # replace the model of your microcontroller here
 git = "https://github.com/stm32-rs/stm32f4xx-hal.git"
+
+
+[dev-dependencies.futures]
+version = "0.3.13"
+default-features = false
+features = ["async-await"]

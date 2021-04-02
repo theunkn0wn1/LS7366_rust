@@ -20,7 +20,7 @@ where
         Self { iface }
     }
 
-    async fn init<'a>(mut self: Pin<&'a mut Self>) -> Result<(), Error<SpiError>> {
+    pub async fn init<'a>(mut self: Pin<&'a mut Self>) -> Result<(), Error<SpiError>> {
         // Creating configurations for the two MDR configuration registers
         let mdr0_payload = mdr0::Mdr0 {
             quad_count_mode: mdr0::QuadCountMode::Quad4x,

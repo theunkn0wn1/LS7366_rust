@@ -1,8 +1,13 @@
 [target.armv7-unknown-linux-gnueabihf]
 linker = "arm-linux-gnueabihf-gcc"
 
+[build]
+target = "thumbv7em-none-eabihf"
+
 [target.thumbv7em-none-eabihf]
 rustflags = [
   "-C", "link-arg=-Tlink.x",
 ]
 
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = "probe-run --chip STM32F446RETx "
