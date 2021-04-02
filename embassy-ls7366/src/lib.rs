@@ -9,7 +9,6 @@ use core::pin::Pin;
 use core::future::Future;
 
 
-pub mod error;
 
 struct Ls7366<SPI> {
     iface: SPI
