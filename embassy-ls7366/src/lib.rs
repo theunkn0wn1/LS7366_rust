@@ -21,7 +21,7 @@ impl<SPI, SpiError> Ls7366<SPI>
         Self { iface }
     }
 
-    async fn init<'a>(self: Pin<&'a mut Self>) -> Result<(), Error<SpiError>>{
+    async fn init<'a>(mut self: Pin<&'a mut Self>) -> Result<(), Error<SpiError>>{
         // Creating configurations for the two MDR configuration registers
         let mdr0_payload = mdr0::Mdr0 {
             quad_count_mode: mdr0::QuadCountMode::Quad4x,
@@ -39,7 +39,8 @@ impl<SPI, SpiError> Ls7366<SPI>
             flag_on_cy: false,
         };
 
-        self.write_register(ir::Target::Mdr0, &[mdr0_payload.encode()]).await?;
+        self.as_mut().write_register(ir::Target::Mdr0, &[mdr0_payload.encode()]).await?;
+        self.as_mut().write_register(ir::Target::Mdr1, &[mdr1_payload.encode()]).await?;
         Ok(())
     }
 
@@ -58,25 +59,21 @@ impl<SPI, SpiError> Ls7366<SPI>
         }
 
         let encoded = ir_cmd.encode();
+        // create payload, initializing it with the IR command
         let payload: &mut [u8] = &mut [encoded, encoded, encoded, encoded, encoded];
 
         let mut i = 1;
+        // copy data bytes into the payload
         for datum in data {
             payload[i] = *datum;
             i+=1;
         }
 
-        let result = unsafe{
+        let result : Result<(), SpiError>= unsafe{
              Pin::new_unchecked(&mut self.get_unchecked_mut().iface).write(data).await
         };
-        match result {
-            Ok(()) =>{
-                Ok(())
-            }
-            Err(e) => {
-                Err(Error::SpiError(e))
-            }
-        }
+        // any error we get us an underlying error, therefore we map it to that type.
+        result.map_err(|e| Error::SpiError(e))
     }
 }
 
