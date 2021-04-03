@@ -78,22 +78,22 @@ async fn main(spawner: Spawner) {
     // let mut driver = ls7366::Ls7366::new(spi).expect("failed to spawn driver");
     pin_mut!(driver);
 
-    // spi1_ss1.set_high().expect("failed to set SS1");
-    spi1_ss1.set_low().expect("failed to set SS1");
+    spi1_ss1.set_high().expect("failed to set SS1");
+    // spi1_ss1.set_low().expect("failed to set SS1");
 
 
     // // this has to be done as a seperate operation thanks to the pin.
     rprintln!("initializing driver...");
-    spi1_ss1.set_high().expect("failed to set SS1");
+    spi1_ss1.set_low().expect("failed to set SS1");
     driver.as_mut().init().await.expect("failed to init chip.");
     // driver.get_status().expect("failed to fetch status");
-    spi1_ss1.set_low().expect("failed to set SS1");
+    spi1_ss1.set_high().expect("failed to set SS1");
 
     rprintln!("fetching status...");
-    spi1_ss1.set_high().expect("failed to set SS1");
+    spi1_ss1.set_low().expect("failed to set SS1");
     let state = driver.as_mut().get_status().await.expect("failed to get status");
     // let  state = driver.get_status().expect("failed to fetch status");
-    spi1_ss1.set_low().expect("failed to set SS1");
+    spi1_ss1.set_high().expect("failed to set SS1");
 
     // let spi1 = driver.reclaim();
     // spi1.free();
