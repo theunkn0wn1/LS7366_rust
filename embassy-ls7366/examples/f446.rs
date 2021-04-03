@@ -58,7 +58,7 @@ async fn main(spawner: Spawner) {
                 polarity: embassy_stm32::hal::spi::Polarity::IdleLow,
                 phase: embassy_stm32::hal::spi::Phase::CaptureOnFirstTransition,
             },
-            100.hz(),
+            14_000.hz(),
             clocks,
         )
     };
@@ -86,11 +86,13 @@ async fn main(spawner: Spawner) {
     rprintln!("initializing driver...");
     spi1_ss1.set_high().expect("failed to set SS1");
     driver.as_mut().init().await.expect("failed to init chip.");
+    // driver.get_status().expect("failed to fetch status");
     spi1_ss1.set_low().expect("failed to set SS1");
 
     rprintln!("fetching status...");
     spi1_ss1.set_high().expect("failed to set SS1");
     let state = driver.as_mut().get_status().await.expect("failed to get status");
+    // let  state = driver.get_status().expect("failed to fetch status");
     spi1_ss1.set_low().expect("failed to set SS1");
 
     // let spi1 = driver.reclaim();
