@@ -112,7 +112,10 @@ where
         // this will modify the RX buffer and return nothing but a possible error.
         unsafe {
             Pin::new_unchecked(&mut self.get_unchecked_mut().iface)
-                .read_write(tx_buffer, rx_buffer)
+                .write(tx_buffer)
+                .await?
+            Pin::new_unchecked(&mut self.get_unchecked_mut().iface)
+                .read(rx_buffer)
                 .await?
         };
         // If we got this far, then transfer succeeded.
