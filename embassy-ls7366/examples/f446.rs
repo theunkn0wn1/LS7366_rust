@@ -64,12 +64,25 @@ async fn main(spawner: Spawner) {
     };
     rprintln!("insantiating driver...");
     let driver = embassy_ls7366::Ls7366::new_uninit(spi);
+    // let spi = stm32f4xx_hal::spi::Spi::spi1(
+    //     dp.SPI1,
+    //     (spi1_sck, spi1_miso, spi1_mosi),
+    //     stm32f4xx_hal::spi::Mode {
+    //         polarity: stm32f4xx_hal::spi::Polarity::IdleLow,
+    //         phase: stm32f4xx_hal::spi::Phase::CaptureOnFirstTransition
+    //     },
+    //     14_000.hz(),
+    //     clocks
+    //
+    // );
+    // let mut driver = ls7366::Ls7366::new(spi).expect("failed to spawn driver");
     pin_mut!(driver);
 
-    spi1_ss1.set_high().expect("failed to set SS1");
+    // spi1_ss1.set_high().expect("failed to set SS1");
+    spi1_ss1.set_low().expect("failed to set SS1");
 
 
-    // this has to be done as a seperate operation thanks to the pin.
+    // // this has to be done as a seperate operation thanks to the pin.
     rprintln!("initializing driver...");
     spi1_ss1.set_high().expect("failed to set SS1");
     driver.as_mut().init().await.expect("failed to init chip.");
@@ -77,8 +90,13 @@ async fn main(spawner: Spawner) {
 
     rprintln!("fetching status...");
     spi1_ss1.set_high().expect("failed to set SS1");
-    let state = driver.as_mut().get_status().await.expect("failed to get chip status.");
+    let state = driver.as_mut().get_status().await.expect("failed to get status");
     spi1_ss1.set_low().expect("failed to set SS1");
+
+    // let spi1 = driver.reclaim();
+    // spi1.free();
+
+
 
     rprintln!("status := {:?}", state);
 }

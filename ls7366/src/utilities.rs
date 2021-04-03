@@ -1,5 +1,5 @@
 /// Converts a vector of length 4 into a u32
-pub(crate) fn vec_to_i64(data: &[u8]) -> i64 {
+pub fn vec_to_i64(data: &[u8]) -> i64 {
     if data.len() > 4 {
         panic!("payload too big!, got {:?}", data)
     }

@@ -101,7 +101,7 @@ pub mod mdr1;
 pub mod str_register;
 mod test_instruction_register;
 pub mod traits;
-mod utilities;
+pub mod utilities;
 
 #[derive(Clone, Debug)]
 pub enum Error<SpiError> {
@@ -311,5 +311,8 @@ where
                 }
             }
         }
+    }
+    pub fn reclaim(self) -> SPI{
+        return self.interface;
     }
 }

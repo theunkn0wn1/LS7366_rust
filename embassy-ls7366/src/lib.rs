@@ -126,6 +126,18 @@ where
         let raw_result = self.read_register(result, ir::Target::Str).await?;
         ls7366::str_register::Str::decode(raw_result[3]).map_err(|e| Error::EncodeError(e))
     }
+    // pub async fn get_count(
+    //     mut self: Pin<&mut Self>
+    // ) -> Result<i64, Error<SpiError>>{
+    //     let buffer: &mut [u8] = &mut [0x00, 0x00, 0x00, 0x00];
+    //     let raw_result = self.as_mut().read_register(buffer, ir::Target::Cntr).await?;
+    //     let status = self.as_mut().get_status().await?;
+    //     let count = ls7366::utilities::vec_to_i64(&raw_result);
+    //     match status.sign_bit {
+    //         ls7366::str_register::SignBit::Negative => Ok(count * -1),
+    //         ls7366::str_register::SignBit::Positive => Ok(count),
+    //     }
+    // }
 }
 
 #[cfg(test)]
